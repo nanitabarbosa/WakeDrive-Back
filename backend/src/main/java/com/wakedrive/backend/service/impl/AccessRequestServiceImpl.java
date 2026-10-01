@@ -1,0 +1,153 @@
+package com.wakedrive.backend.service.impl;
+
+import com.wakedrive.backend.dto.AccessRequestCountsDTO;
+import com.wakedrive.backend.dto.AccessRequestCreateDTO;
+import com.wakedrive.backend.dto.AccessRequestDTO;
+import com.wakedrive.backend.dto.PageResponseDTO;
+import com.wakedrive.backend.entity.*;
+import com.wakedrive.backend.exception.DuplicateResourceException;
+import com.wakedrive.backend.exception.ResourceNotFoundException;
+import com.wakedrive.backend.repository.AccessRequestRepository;
+import com.wakedrive.backend.repository.CityRepository;
+import com.wakedrive.backend.repository.CompanyRepository;
+import com.wakedrive.backend.repository.RoleRepository;
+import com.wakedrive.backend.repository.UserRepository;
+import com.wakedrive.backend.service.AccessRequestService;
+import com.wakedrive.backend.service.MailService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class AccessRequestServiceImpl implements AccessRequestService {
+
+    private static final String COUNTRY = "Colombia";
+    private static final String ADMIN_ROLE = "ADMIN";
+
+    private final AccessRequestRepository accessRequestRepository;
+    private final CityRepository cityRepository;
+    private final CompanyRepository companyRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final MailService mailService;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
+    @Override
+    public void create(AccessRequestCreateDTO request) {
+        City city = cityRepository.findById(request.getCityId())
+                .orElseThrow(() -> new ResourceNotFoundException("City not found: " + request.getCityId()));
+
+        AccessRequest accessRequest = AccessRequest.builder()
+                .companyName(request.getCompanyName())
+                .nit(request.getNit())
+                .city(city)
+                .address(request.getAddress())
+                .companyPhone(request.getCompanyPhone())
+                .adminName(request.getAdminName())
+                .adminEmail(request.getAdminEmail())
+                .adminPhone(request.getAdminPhone())
+                .status(AccessRequestStatus.PENDING)
+                .build();
+        accessRequestRepository.save(accessRequest);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponseDTO<AccessRequestDTO> getAll(AccessRequestStatus status, int page, int size) {
+        Page<AccessRequest> result = status != null
+                ? accessRequestRepository.findByStatus(status, PageRequest.of(page, size))
+                : accessRequestRepository.findAll(PageRequest.of(page, size));
+        return PageResponseDTO.of(result, this::toDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AccessRequestCountsDTO getCounts() {
+        return AccessRequestCountsDTO.builder()
+                .total(accessRequestRepository.count())
+                .pending(accessRequestRepository.countByStatus(AccessRequestStatus.PENDING))
+                .approved(accessRequestRepository.countByStatus(AccessRequestStatus.APPROVED))
+                .rejected(accessRequestRepository.countByStatus(AccessRequestStatus.REJECTED))
+                .inactive(accessRequestRepository.countByStatus(AccessRequestStatus.INACTIVE))
+                .build();
+    }
+
+    @Override
+    public void approve(Long id) {
+        AccessRequest accessRequest = findEntity(id);
+
+        if (companyRepository.existsByNit(accessRequest.getNit())) {
+            throw new DuplicateResourceException("A company already exists with nit: " + accessRequest.getNit());
+        }
+
+        Company company = Company.builder()
+                .nit(accessRequest.getNit())
+                .name(accessRequest.getCompanyName())
+                .address(accessRequest.getAddress())
+                .phone(accessRequest.getCompanyPhone())
+                .email(accessRequest.getAdminEmail())
+                .build();
+        companyRepository.save(company);
+
+        Role adminRole = roleRepository.findByName(ADMIN_ROLE)
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + ADMIN_ROLE));
+
+        String resetToken = UUID.randomUUID().toString();
+        User admin = User.builder()
+                .name(accessRequest.getAdminName())
+                .email(accessRequest.getAdminEmail())
+                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .role(adminRole)
+                .company(company)
+                .resetToken(resetToken)
+                .resetTokenExpiry(LocalDateTime.now().plusDays(2))
+                .build();
+        userRepository.save(admin);
+
+        mailService.sendPasswordSetupEmail(admin.getEmail(), frontendUrl + "/auth/reset-password?token=" + resetToken);
+
+        accessRequest.setStatus(AccessRequestStatus.APPROVED);
+        accessRequestRepository.save(accessRequest);
+    }
+
+    @Override
+    public void reject(Long id) {
+        AccessRequest accessRequest = findEntity(id);
+        accessRequest.setStatus(AccessRequestStatus.REJECTED);
+        accessRequestRepository.save(accessRequest);
+    }
+
+    private AccessRequest findEntity(Long id) {
+        return accessRequestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Access request not found: " + id));
+    }
+
+    private AccessRequestDTO toDTO(AccessRequest accessRequest) {
+        return AccessRequestDTO.builder()
+                .id(accessRequest.getId())
+                .companyName(accessRequest.getCompanyName())
+                .nit(accessRequest.getNit())
+                .country(COUNTRY)
+                .city(accessRequest.getCity().getName())
+                .address(accessRequest.getAddress())
+                .companyPhone(accessRequest.getCompanyPhone())
+                .adminName(accessRequest.getAdminName())
+                .adminEmail(accessRequest.getAdminEmail())
+                .adminPhone(accessRequest.getAdminPhone())
+                .status(accessRequest.getStatus())
+                .createdAt(accessRequest.getCreatedAt())
+                .build();
+    }
+}
