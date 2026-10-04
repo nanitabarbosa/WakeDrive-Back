@@ -1,6 +1,7 @@
 package com.wakedrive.backend.controller;
 
 import com.wakedrive.backend.dto.AuthResponseDTO;
+import com.wakedrive.backend.dto.ChangePasswordRequestDTO;
 import com.wakedrive.backend.dto.ForgotPasswordRequestDTO;
 import com.wakedrive.backend.dto.LoginRequestDTO;
 import com.wakedrive.backend.dto.ResetPasswordRequestDTO;
@@ -34,5 +35,10 @@ public class AuthController {
     @PostMapping("/reset-password")
     public void resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
         authService.resetPassword(request);
+    }
+
+    @PatchMapping("/change-password")
+    public void changePassword(@Valid @RequestBody ChangePasswordRequestDTO request) {
+        authService.changePassword(request);
     }
 }

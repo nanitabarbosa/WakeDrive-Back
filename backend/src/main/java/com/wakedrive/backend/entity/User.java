@@ -45,4 +45,8 @@ public class User {
 
     @Column(name = "reset_token_expiry")
     private LocalDateTime resetTokenExpiry;
+
+    @Column(name = "must_change_password")
+    @Builder.Default
+    private Boolean mustChangePassword = false;
 }

@@ -15,4 +15,5 @@ public class SessionUserDTO {
 
     private String name;
     private String role;
+    private Boolean mustChangePassword;
 }

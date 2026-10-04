@@ -31,9 +31,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/forgot-password",
+                                "/api/auth/reset-password", "/api/auth/reset-password/validate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/access-requests").permitAll()
                         .requestMatchers("/api/cities").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/access-requests").hasRole("SUPER_ADMIN")

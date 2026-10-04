@@ -2,7 +2,7 @@ package com.wakedrive.backend.service;
 
 public interface MailService {
 
-    void sendPasswordSetupEmail(String to, String resetLink);
+    void sendAccountCreatedEmail(String to, String adminName, String email, String password);
 
     void sendPasswordResetEmail(String to, String resetLink);
 }

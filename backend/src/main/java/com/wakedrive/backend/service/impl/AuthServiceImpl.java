@@ -1,6 +1,7 @@
 package com.wakedrive.backend.service.impl;
 
 import com.wakedrive.backend.dto.AuthResponseDTO;
+import com.wakedrive.backend.dto.ChangePasswordRequestDTO;
 import com.wakedrive.backend.dto.ForgotPasswordRequestDTO;
 import com.wakedrive.backend.dto.LoginRequestDTO;
 import com.wakedrive.backend.dto.ResetPasswordRequestDTO;
@@ -8,12 +9,14 @@ import com.wakedrive.backend.dto.SessionUserDTO;
 import com.wakedrive.backend.entity.User;
 import com.wakedrive.backend.exception.ResourceNotFoundException;
 import com.wakedrive.backend.repository.UserRepository;
+import com.wakedrive.backend.security.CurrentUserProvider;
 import com.wakedrive.backend.security.JwtService;
 import com.wakedrive.backend.service.AuthService;
 import com.wakedrive.backend.service.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final CurrentUserProvider currentUserProvider;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
@@ -50,7 +54,11 @@ public class AuthServiceImpl implements AuthService {
         return AuthResponseDTO.builder()
                 .token(token)
                 .roles(List.of(roleName))
-                .user(SessionUserDTO.builder().name(user.getName()).role(roleName).build())
+                .user(SessionUserDTO.builder()
+                        .name(user.getName())
+                        .role(roleName)
+                        .mustChangePassword(Boolean.TRUE.equals(user.getMustChangePassword()))
+                        .build())
                 .build();
     }
 
@@ -77,6 +85,17 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequestDTO request) {
+        User user = currentUserProvider.getCurrentUser();
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Current password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setMustChangePassword(false);
         userRepository.save(user);
     }
 
