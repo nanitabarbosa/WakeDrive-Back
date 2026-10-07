@@ -4,6 +4,7 @@ import com.wakedrive.backend.entity.RecordStatus;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,6 +26,8 @@ public class DriverRequestDTO {
     @Email
     private String email;
 
+    @NotBlank
+    @Pattern(regexp = "^\\+?[\\d\\s]{7,20}$")
     private String phone;
 
     @NotNull
