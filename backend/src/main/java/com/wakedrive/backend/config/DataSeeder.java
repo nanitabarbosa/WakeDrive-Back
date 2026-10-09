@@ -1,18 +1,17 @@
 package com.wakedrive.backend.config;
 
-import com.wakedrive.backend.entity.City;
-import com.wakedrive.backend.entity.Role;
-import com.wakedrive.backend.entity.User;
-import com.wakedrive.backend.repository.CityRepository;
-import com.wakedrive.backend.repository.RoleRepository;
-import com.wakedrive.backend.repository.UserRepository;
+import com.wakedrive.backend.city.entity.City;
+import com.wakedrive.backend.city.repository.CityRepository;
+import com.wakedrive.backend.user.entity.Role;
+import com.wakedrive.backend.user.entity.User;
+import com.wakedrive.backend.user.repository.RoleRepository;
+import com.wakedrive.backend.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor

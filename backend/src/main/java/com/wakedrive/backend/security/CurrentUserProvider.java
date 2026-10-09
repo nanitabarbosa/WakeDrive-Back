@@ -1,7 +1,7 @@
 package com.wakedrive.backend.security;
 
-import com.wakedrive.backend.entity.User;
-import com.wakedrive.backend.exception.ResourceNotFoundException;
+import com.wakedrive.backend.common.exception.ResourceNotFoundException;
+import com.wakedrive.backend.user.entity.User;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 

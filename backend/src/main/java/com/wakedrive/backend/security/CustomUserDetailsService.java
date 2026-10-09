@@ -1,7 +1,7 @@
 package com.wakedrive.backend.security;
 
-import com.wakedrive.backend.entity.User;
-import com.wakedrive.backend.repository.UserRepository;
+import com.wakedrive.backend.user.entity.User;
+import com.wakedrive.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

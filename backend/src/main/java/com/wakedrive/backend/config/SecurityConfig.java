@@ -1,6 +1,7 @@
 package com.wakedrive.backend.config;
 
 import com.wakedrive.backend.security.JwtAuthenticationFilter;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,8 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -31,7 +30,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/forgot-password",
+                        .requestMatchers("/api/auth/login", "/api/auth/refresh", "/api/auth/forgot-password",
                                 "/api/auth/reset-password", "/api/auth/reset-password/validate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/access-requests").permitAll()
                         .requestMatchers("/api/cities").permitAll()
