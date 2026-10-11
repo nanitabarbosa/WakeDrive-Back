@@ -5,7 +5,6 @@ import com.wakedrive.backend.common.dto.PageResponseDTO;
 import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.vehicle.dto.VehicleDTO;
 import com.wakedrive.backend.vehicle.dto.VehicleRequestDTO;
-import com.wakedrive.backend.vehicle.entity.VehicleType;
 import com.wakedrive.backend.vehicle.service.VehicleService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -24,11 +23,11 @@ public class VehicleController {
     @GetMapping
     public PageResponseDTO<VehicleDTO> getAll(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) VehicleType type,
+            @RequestParam(required = false) Long vehicleTypeId,
             @RequestParam(required = false) RecordStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return vehicleService.getAll(search, type, status, page, size);
+        return vehicleService.getAll(search, vehicleTypeId, status, page, size);
     }
 
     @GetMapping("/options")

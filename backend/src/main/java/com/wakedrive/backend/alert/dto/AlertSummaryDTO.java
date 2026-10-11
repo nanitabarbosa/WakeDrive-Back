@@ -1,7 +1,7 @@
 package com.wakedrive.backend.alert.dto;
 
 import com.wakedrive.backend.alert.entity.AlertLevel;
-import com.wakedrive.backend.alert.entity.AlertType;
+import com.wakedrive.backend.eventtype.dto.EventTypeDTO;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +21,7 @@ public class AlertSummaryDTO {
     private String user;
     private String vehiclePlate;
     private String location;
-    private AlertType type;
+    private EventTypeDTO eventType;
     private Integer durationSeconds;
     private AlertLevel level;
 }

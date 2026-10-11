@@ -1,5 +1,8 @@
 package com.wakedrive.backend.vehicle.service.impl;
 
+import com.wakedrive.backend.brand.dto.BrandDTO;
+import com.wakedrive.backend.brand.entity.Brand;
+import com.wakedrive.backend.brand.repository.BrandRepository;
 import com.wakedrive.backend.common.dto.FilterOptionDTO;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
 import com.wakedrive.backend.common.entity.RecordStatus;
@@ -11,9 +14,11 @@ import com.wakedrive.backend.security.CurrentUserProvider;
 import com.wakedrive.backend.vehicle.dto.VehicleDTO;
 import com.wakedrive.backend.vehicle.dto.VehicleRequestDTO;
 import com.wakedrive.backend.vehicle.entity.Vehicle;
-import com.wakedrive.backend.vehicle.entity.VehicleType;
 import com.wakedrive.backend.vehicle.repository.VehicleRepository;
 import com.wakedrive.backend.vehicle.service.VehicleService;
+import com.wakedrive.backend.vehicletype.dto.VehicleTypeDTO;
+import com.wakedrive.backend.vehicletype.entity.VehicleType;
+import com.wakedrive.backend.vehicletype.repository.VehicleTypeRepository;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +37,13 @@ public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final CompanyRepository companyRepository;
+    private final BrandRepository brandRepository;
+    private final VehicleTypeRepository vehicleTypeRepository;
     private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<VehicleDTO> getAll(String search, VehicleType type, RecordStatus status, int page, int size) {
+    public PageResponseDTO<VehicleDTO> getAll(String search, Long vehicleTypeId, RecordStatus status, int page, int size) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Vehicle> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -45,12 +52,12 @@ public class VehicleServiceImpl implements VehicleService {
                 String like = "%" + search.toLowerCase() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("plate")), like),
-                        cb.like(cb.lower(root.get("brand")), like),
+                        cb.like(cb.lower(root.get("brand").get("name")), like),
                         cb.like(cb.lower(root.get("model")), like)
                 ));
             }
-            if (type != null) {
-                predicates.add(cb.equal(root.get("type"), type));
+            if (vehicleTypeId != null) {
+                predicates.add(cb.equal(root.get("type").get("id"), vehicleTypeId));
             }
             if (status != null) {
                 predicates.add(cb.equal(root.get("status"), status));
@@ -100,11 +107,15 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     private void applyRequest(Vehicle vehicle, VehicleRequestDTO request) {
+        Brand brand = brandRepository.findById(request.getBrandId())
+                .orElseThrow(() -> new ResourceNotFoundException("Brand not found: " + request.getBrandId()));
+        VehicleType vehicleType = vehicleTypeRepository.findById(request.getVehicleTypeId())
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle type not found: " + request.getVehicleTypeId()));
         vehicle.setPlate(request.getPlate());
-        vehicle.setBrand(request.getBrand());
+        vehicle.setBrand(brand);
         vehicle.setModel(request.getModel());
         vehicle.setYear(request.getYear());
-        vehicle.setType(request.getType());
+        vehicle.setType(vehicleType);
         vehicle.setStatus(request.getStatus());
     }
 
@@ -121,10 +132,10 @@ public class VehicleServiceImpl implements VehicleService {
         return VehicleDTO.builder()
                 .id(vehicle.getId())
                 .plate(vehicle.getPlate())
-                .brand(vehicle.getBrand())
+                .brand(BrandDTO.builder().id(vehicle.getBrand().getId()).name(vehicle.getBrand().getName()).build())
                 .model(vehicle.getModel())
                 .year(vehicle.getYear())
-                .type(vehicle.getType())
+                .type(VehicleTypeDTO.builder().id(vehicle.getType().getId()).name(vehicle.getType().getName()).build())
                 .status(vehicle.getStatus())
                 .build();
     }

@@ -3,10 +3,10 @@ package com.wakedrive.backend.alert.service.impl;
 import com.wakedrive.backend.alert.dto.AlertDTO;
 import com.wakedrive.backend.alert.entity.Alert;
 import com.wakedrive.backend.alert.entity.AlertLevel;
-import com.wakedrive.backend.alert.entity.AlertType;
 import com.wakedrive.backend.alert.repository.AlertRepository;
 import com.wakedrive.backend.alert.service.AlertService;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
+import com.wakedrive.backend.eventtype.dto.EventTypeDTO;
 import com.wakedrive.backend.security.CurrentUserProvider;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
@@ -33,7 +33,7 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public PageResponseDTO<AlertDTO> getAll(LocalDate from, LocalDate to, Long userId, Long vehicleId,
-                                             AlertType type, AlertLevel level, String location, int page, int size) {
+                                             Long eventTypeId, AlertLevel level, String location, int page, int size) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Alert> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -50,8 +50,8 @@ public class AlertServiceImpl implements AlertService {
             if (vehicleId != null) {
                 predicates.add(cb.equal(root.get("vehicle").get("id"), vehicleId));
             }
-            if (type != null) {
-                predicates.add(cb.equal(root.get("type"), type));
+            if (eventTypeId != null) {
+                predicates.add(cb.equal(root.get("eventType").get("id"), eventTypeId));
             }
             if (level != null) {
                 predicates.add(cb.equal(root.get("level"), level));
@@ -75,7 +75,10 @@ public class AlertServiceImpl implements AlertService {
                 .vehiclePlate(alert.getVehicle().getPlate())
                 .deviceSerial(alert.getDevice().getSerial())
                 .location(alert.getLocation())
-                .type(alert.getType())
+                .eventType(EventTypeDTO.builder()
+                        .id(alert.getEventType().getId())
+                        .name(alert.getEventType().getName())
+                        .build())
                 .durationSeconds(alert.getDurationSeconds())
                 .level(alert.getLevel())
                 .build();

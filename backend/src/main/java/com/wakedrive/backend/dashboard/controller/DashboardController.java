@@ -1,7 +1,6 @@
 package com.wakedrive.backend.dashboard.controller;
 
 import com.wakedrive.backend.alert.dto.AlertSummaryDTO;
-import com.wakedrive.backend.alert.entity.AlertType;
 import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.dashboard.dto.DailyAlertsDTO;
 import com.wakedrive.backend.dashboard.dto.DashboardStatsDTO;
@@ -42,9 +41,9 @@ public class DashboardController {
     @GetMapping("/alerts")
     public List<AlertSummaryDTO> getAlerts(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) AlertType type,
+            @RequestParam(required = false) Long eventTypeId,
             @RequestParam(defaultValue = "5") int limit) {
-        return dashboardService.getAlerts(search, type, limit);
+        return dashboardService.getAlerts(search, eventTypeId, limit);
     }
 
     @GetMapping("/alerts/by-day")

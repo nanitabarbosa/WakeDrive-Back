@@ -2,6 +2,7 @@ package com.wakedrive.backend.alert.entity;
 
 import com.wakedrive.backend.device.entity.Device;
 import com.wakedrive.backend.driver.entity.Driver;
+import com.wakedrive.backend.eventtype.entity.EventType;
 import com.wakedrive.backend.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -43,9 +44,9 @@ public class Alert {
     @Column(name = "location", nullable = false)
     private String location;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private AlertType type;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "event_type_id", nullable = false)
+    private EventType eventType;
 
     @Column(name = "duration_seconds", nullable = false)
     private Integer durationSeconds;

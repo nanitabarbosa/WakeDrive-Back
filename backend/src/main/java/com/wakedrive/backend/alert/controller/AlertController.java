@@ -2,7 +2,6 @@ package com.wakedrive.backend.alert.controller;
 
 import com.wakedrive.backend.alert.dto.AlertDTO;
 import com.wakedrive.backend.alert.entity.AlertLevel;
-import com.wakedrive.backend.alert.entity.AlertType;
 import com.wakedrive.backend.alert.service.AlertService;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
 import java.time.LocalDate;
@@ -26,11 +25,11 @@ public class AlertController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long vehicleId,
-            @RequestParam(required = false) AlertType type,
+            @RequestParam(required = false) Long eventTypeId,
             @RequestParam(required = false) AlertLevel level,
             @RequestParam(required = false) String location,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return alertService.getAll(from, to, userId, vehicleId, type, level, location, page, size);
+        return alertService.getAll(from, to, userId, vehicleId, eventTypeId, level, location, page, size);
     }
 }

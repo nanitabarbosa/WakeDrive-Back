@@ -2,9 +2,9 @@ package com.wakedrive.backend.dashboard.service.impl;
 
 import com.wakedrive.backend.alert.dto.AlertSummaryDTO;
 import com.wakedrive.backend.alert.entity.Alert;
-import com.wakedrive.backend.alert.entity.AlertType;
 import com.wakedrive.backend.alert.repository.AlertRepository;
 import com.wakedrive.backend.common.entity.RecordStatus;
+import com.wakedrive.backend.eventtype.dto.EventTypeDTO;
 import com.wakedrive.backend.dashboard.dto.DailyAlertsDTO;
 import com.wakedrive.backend.dashboard.dto.DashboardStatsDTO;
 import com.wakedrive.backend.dashboard.dto.TrendStatDTO;
@@ -103,7 +103,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List<AlertSummaryDTO> getAlerts(String search, AlertType type, int limit) {
+    public List<AlertSummaryDTO> getAlerts(String search, Long eventTypeId, int limit) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Alert> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -115,8 +115,8 @@ public class DashboardServiceImpl implements DashboardService {
                         cb.like(cb.lower(root.get("vehicle").get("plate")), like)
                 ));
             }
-            if (type != null) {
-                predicates.add(cb.equal(root.get("type"), type));
+            if (eventTypeId != null) {
+                predicates.add(cb.equal(root.get("eventType").get("id"), eventTypeId));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -208,7 +208,10 @@ public class DashboardServiceImpl implements DashboardService {
                 .user(alert.getDriver().getFullName())
                 .vehiclePlate(alert.getVehicle().getPlate())
                 .location(alert.getLocation())
-                .type(alert.getType())
+                .eventType(EventTypeDTO.builder()
+                        .id(alert.getEventType().getId())
+                        .name(alert.getEventType().getName())
+                        .build())
                 .durationSeconds(alert.getDurationSeconds())
                 .level(alert.getLevel())
                 .build();

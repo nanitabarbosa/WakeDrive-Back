@@ -1,7 +1,8 @@
 package com.wakedrive.backend.vehicle.dto;
 
+import com.wakedrive.backend.brand.dto.BrandDTO;
 import com.wakedrive.backend.common.entity.RecordStatus;
-import com.wakedrive.backend.vehicle.entity.VehicleType;
+import com.wakedrive.backend.vehicletype.dto.VehicleTypeDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,9 +18,9 @@ public class VehicleDTO {
 
     private Long id;
     private String plate;
-    private String brand;
+    private BrandDTO brand;
     private String model;
     private Integer year;
-    private VehicleType type;
+    private VehicleTypeDTO type;
     private RecordStatus status;
 }

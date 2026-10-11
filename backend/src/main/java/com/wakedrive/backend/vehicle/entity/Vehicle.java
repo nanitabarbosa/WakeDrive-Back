@@ -1,7 +1,9 @@
 package com.wakedrive.backend.vehicle.entity;
 
+import com.wakedrive.backend.brand.entity.Brand;
 import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.company.entity.Company;
+import com.wakedrive.backend.vehicletype.entity.VehicleType;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -28,8 +30,9 @@ public class Vehicle {
     @Column(name = "plate", length = 15, nullable = false, unique = true)
     private String plate;
 
-    @Column(name = "brand", nullable = false)
-    private String brand;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "brand_id", nullable = false)
+    private Brand brand;
 
     @Column(name = "model", nullable = false)
     private String model;
@@ -37,8 +40,8 @@ public class Vehicle {
     @Column(name = "year", nullable = false)
     private Integer year;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "vehicle_type_id", nullable = false)
     private VehicleType type;
 
     @Enumerated(EnumType.STRING)
