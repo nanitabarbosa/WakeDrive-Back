@@ -1,0 +1,6 @@
+target/
+.idea/
+.git/
+uploads/
+*.stackdump
+.env
