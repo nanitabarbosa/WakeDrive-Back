@@ -11,7 +11,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
-@Table(name = "access_request")
+@Table(name = "access_requests")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,7 +21,7 @@ public class AccessRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false, nullable = false)
+    @Column(name = "access_request_id", updatable = false, nullable = false)
     private Long id;
 
     @Column(name = "company_name", nullable = false)
