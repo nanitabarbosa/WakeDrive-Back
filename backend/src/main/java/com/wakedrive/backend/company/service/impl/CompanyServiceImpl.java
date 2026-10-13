@@ -10,6 +10,7 @@ import com.wakedrive.backend.company.repository.CompanyRepository;
 import com.wakedrive.backend.company.service.CompanyService;
 import com.wakedrive.backend.device.entity.Device;
 import com.wakedrive.backend.device.repository.DeviceRepository;
+import com.wakedrive.backend.security.CurrentUserProvider;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +29,15 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final DeviceRepository deviceRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional(readOnly = true)
     public List<CompanyDTO> getAll() {
-        return companyRepository.findAll().stream()
+        List<Company> companies = currentUserProvider.isSuperAdmin()
+                ? companyRepository.findAll()
+                : companyRepository.findById(currentUserProvider.getCurrentCompanyId()).stream().toList();
+        return companies.stream()
                 .map(company -> CompanyDTO.builder().id(company.getId()).name(company.getName()).build())
                 .toList();
     }

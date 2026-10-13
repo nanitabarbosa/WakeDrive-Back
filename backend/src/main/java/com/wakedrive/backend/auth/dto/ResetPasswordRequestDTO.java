@@ -1,6 +1,7 @@
 package com.wakedrive.backend.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,6 +18,7 @@ public class ResetPasswordRequestDTO {
     private String token;
 
     @NotBlank
-    @Size(min = 8)
+    @Size(min = 8, max = 72)
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$", message = "La contraseña debe incluir letras y números")
     private String password;
 }

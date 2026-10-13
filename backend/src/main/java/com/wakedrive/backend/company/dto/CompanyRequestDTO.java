@@ -2,6 +2,7 @@ package com.wakedrive.backend.company.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,7 +25,7 @@ public class CompanyRequestDTO {
     @Size(max = 100)
     private String address;
 
-    @Size(max = 20)
+    @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
     private String phone;
 
     @Email

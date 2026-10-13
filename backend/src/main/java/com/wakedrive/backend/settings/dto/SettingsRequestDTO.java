@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,6 +29,7 @@ public class SettingsRequestDTO {
     private Integer alarmDurationSeconds;
 
     @NotBlank
+    @Size(max = 255)
     private String companyName;
 
     @NotBlank
@@ -35,10 +37,11 @@ public class SettingsRequestDTO {
     private String nit;
 
     @NotBlank
+    @Size(max = 150)
     private String address;
 
     @NotBlank
-    @Pattern(regexp = "^\\d{7,15}$")
+    @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
     private String phone;
 
     private boolean removeAlarmSound;

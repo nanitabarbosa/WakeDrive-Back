@@ -2,7 +2,9 @@ package com.wakedrive.backend.common.service.impl;
 
 import com.wakedrive.backend.common.dto.StoredFileDTO;
 import com.wakedrive.backend.common.service.FileStorageService;
+import com.wakedrive.backend.common.service.UploadKind;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class FileStorageServiceImpl implements FileStorageService {
 
+    private static final int SIGNATURE_BYTES = 12;
+
     @Value("${app.uploads.dir}")
     private String uploadsDir;
 
@@ -21,25 +25,28 @@ public class FileStorageServiceImpl implements FileStorageService {
     private String baseUrl;
 
     @Override
-    public StoredFileDTO store(MultipartFile file, String subFolder) {
+    public StoredFileDTO store(MultipartFile file, String subFolder, UploadKind kind) {
+        if (file.getSize() > kind.getMaxBytes()) {
+            throw new IllegalArgumentException("El archivo supera el tamaño máximo de " + kind.getMaxLabel());
+        }
+
         try {
-            Path folder = Path.of(uploadsDir, subFolder);
+            String extension = detectExtension(file, kind);
+
+            Path root = Path.of(uploadsDir).toAbsolutePath().normalize();
+            Path folder = root.resolve(subFolder).normalize();
+            if (!folder.startsWith(root)) {
+                throw new IllegalArgumentException("Invalid upload folder");
+            }
             Files.createDirectories(folder);
 
-            String extension = "";
-            String originalName = file.getOriginalFilename();
-            if (originalName != null && originalName.contains(".")) {
-                extension = originalName.substring(originalName.lastIndexOf('.'));
-            }
             String storedName = UUID.randomUUID() + extension;
-            Path destination = folder.resolve(storedName);
-            file.transferTo(destination);
+            file.transferTo(folder.resolve(storedName));
 
-            String relativePath = subFolder + "/" + storedName;
             return StoredFileDTO.builder()
-                    .name(originalName)
+                    .name(file.getOriginalFilename())
                     .size(file.getSize())
-                    .url(baseUrl + "/" + relativePath)
+                    .url(baseUrl + "/" + subFolder + "/" + storedName)
                     .build();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to store file", e);
@@ -52,9 +59,50 @@ public class FileStorageServiceImpl implements FileStorageService {
             return;
         }
         try {
-            Files.deleteIfExists(Path.of(uploadsDir, path));
+            Path root = Path.of(uploadsDir).toAbsolutePath().normalize();
+            Path target = root.resolve(path).normalize();
+            if (target.startsWith(root)) {
+                Files.deleteIfExists(target);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to delete file", e);
         }
+    }
+
+    private String detectExtension(MultipartFile file, UploadKind kind) throws IOException {
+        byte[] head;
+        try (InputStream in = file.getInputStream()) {
+            head = in.readNBytes(SIGNATURE_BYTES);
+        }
+
+        String extension = switch (kind) {
+            case IMAGE -> isPng(head) ? ".png" : isJpeg(head) ? ".jpg" : null;
+            case AUDIO -> isMp3(head) ? ".mp3" : null;
+        };
+
+        if (extension == null) {
+            throw new IllegalArgumentException("Formato no permitido. Solo se aceptan archivos " + kind.getFormatsLabel());
+        }
+        return extension;
+    }
+
+    private boolean isPng(byte[] head) {
+        return head.length >= 8
+                && (head[0] & 0xFF) == 0x89 && head[1] == 'P' && head[2] == 'N' && head[3] == 'G'
+                && head[4] == 0x0D && head[5] == 0x0A && head[6] == 0x1A && head[7] == 0x0A;
+    }
+
+    private boolean isJpeg(byte[] head) {
+        return head.length >= 3
+                && (head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xD8 && (head[2] & 0xFF) == 0xFF;
+    }
+
+    private boolean isMp3(byte[] head) {
+        if (head.length < 3) {
+            return false;
+        }
+        boolean id3Tag = head[0] == 'I' && head[1] == 'D' && head[2] == '3';
+        boolean frameSync = (head[0] & 0xFF) == 0xFF && (head[1] & 0xE0) == 0xE0;
+        return id3Tag || frameSync;
     }
 }

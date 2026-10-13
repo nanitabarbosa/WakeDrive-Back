@@ -11,6 +11,7 @@ import com.wakedrive.backend.city.entity.City;
 import com.wakedrive.backend.city.repository.CityRepository;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
 import com.wakedrive.backend.common.exception.DuplicateResourceException;
+import com.wakedrive.backend.common.exception.InvalidStateException;
 import com.wakedrive.backend.common.exception.ResourceNotFoundException;
 import com.wakedrive.backend.common.service.MailService;
 import com.wakedrive.backend.company.entity.Company;
@@ -21,6 +22,7 @@ import com.wakedrive.backend.user.repository.RoleRepository;
 import com.wakedrive.backend.user.repository.UserRepository;
 import java.security.SecureRandom;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,6 +45,9 @@ public class AccessRequestServiceImpl implements AccessRequestService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     private static final String PASSWORD_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
     private static final int PASSWORD_LENGTH = 12;
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -52,12 +57,19 @@ public class AccessRequestServiceImpl implements AccessRequestService {
         City city = cityRepository.findById(request.getCityId())
                 .orElseThrow(() -> new ResourceNotFoundException("City not found: " + request.getCityId()));
 
-        if (companyRepository.existsByNit(request.getNit())) {
+        String nit = normalizeNit(request.getNit());
+        if (companyRepository.existsByNormalizedNit(nit)) {
             throw new DuplicateResourceException("A company already exists with nit: " + request.getNit());
+        }
+        if (accessRequestRepository.existsByNormalizedNitAndStatus(nit, AccessRequestStatus.PENDING)) {
+            throw new DuplicateResourceException("A pending access request already exists with nit: " + request.getNit());
         }
 
         if (userRepository.existsByEmail(request.getAdminEmail())) {
             throw new DuplicateResourceException("A user already exists with email: " + request.getAdminEmail());
+        }
+        if (accessRequestRepository.existsByAdminEmailIgnoreCaseAndStatus(request.getAdminEmail(), AccessRequestStatus.PENDING)) {
+            throw new DuplicateResourceException("A pending access request already exists with email: " + request.getAdminEmail());
         }
 
         AccessRequest accessRequest = AccessRequest.builder()
@@ -97,9 +109,9 @@ public class AccessRequestServiceImpl implements AccessRequestService {
 
     @Override
     public void approve(Long id) {
-        AccessRequest accessRequest = findEntity(id);
+        AccessRequest accessRequest = findPendingEntity(id);
 
-        if (companyRepository.existsByNit(accessRequest.getNit())) {
+        if (companyRepository.existsByNormalizedNit(normalizeNit(accessRequest.getNit()))) {
             throw new DuplicateResourceException("A company already exists with nit: " + accessRequest.getNit());
         }
 
@@ -138,9 +150,27 @@ public class AccessRequestServiceImpl implements AccessRequestService {
 
     @Override
     public void reject(Long id) {
-        AccessRequest accessRequest = findEntity(id);
+        AccessRequest accessRequest = findPendingEntity(id);
         accessRequest.setStatus(AccessRequestStatus.REJECTED);
         accessRequestRepository.save(accessRequest);
+
+        mailService.sendCompanyRejectedEmail(
+                accessRequest.getAdminEmail(),
+                accessRequest.getAdminName(),
+                accessRequest.getCompanyName(),
+                frontendUrl + "/auth/request-access");
+    }
+
+    private String normalizeNit(String nit) {
+        return nit.replace("-", "").trim();
+    }
+
+    private AccessRequest findPendingEntity(Long id) {
+        AccessRequest accessRequest = findEntity(id);
+        if (accessRequest.getStatus() != AccessRequestStatus.PENDING) {
+            throw new InvalidStateException("Access request is not pending: " + id);
+        }
+        return accessRequest;
     }
 
     private String generatePassword() {

@@ -13,6 +13,9 @@ import com.wakedrive.backend.user.repository.UserRepository;
 import com.wakedrive.backend.vehicletype.entity.VehicleType;
 import com.wakedrive.backend.vehicletype.repository.VehicleTypeRepository;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -43,6 +46,9 @@ public class DataSeeder implements CommandLineRunner {
         ensureRole("ADMIN");
 
         if (userRepository.findByEmail(superAdminEmail).isEmpty()) {
+            if (superAdminPassword == null || superAdminPassword.isBlank()) {
+                throw new IllegalStateException("app.seed.super-admin-password must not be blank");
+            }
             User superAdmin = User.builder()
                     .name("Super Admin")
                     .email(superAdminEmail)
@@ -52,31 +58,31 @@ public class DataSeeder implements CommandLineRunner {
             userRepository.save(superAdmin);
         }
 
-        if (cityRepository.count() == 0) {
-            List<String> cities = List.of(
-                    "Bogotá", "Medellín", "Cali", "Barranquilla", "Cartagena",
-                    "Bucaramanga", "Pereira", "Santa Marta", "Manizales", "Cúcuta"
-            );
-            cities.forEach(name -> cityRepository.save(City.builder().name(name).build()));
-        }
+        List<String> cities = List.of(
+                "Bogotá", "Medellín", "Cali", "Barranquilla", "Cartagena",
+                "Bucaramanga", "Pereira", "Santa Marta", "Manizales", "Cúcuta"
+        );
+        seedMissing(cities, cityRepository.findAll().stream().map(City::getName).collect(Collectors.toSet()),
+                name -> cityRepository.save(City.builder().name(name).build()));
 
-        if (eventTypeRepository.count() == 0) {
-            List<String> eventTypes = List.of("DROWSINESS", "FACE_NOT_DETECTED", "DEVICE_OFF", "CONNECTION_LOST");
-            eventTypes.forEach(name -> eventTypeRepository.save(EventType.builder().name(name).build()));
-        }
+        List<String> eventTypes = List.of("DROWSINESS", "FACE_NOT_DETECTED", "DEVICE_OFF", "CONNECTION_LOST");
+        seedMissing(eventTypes, eventTypeRepository.findAll().stream().map(EventType::getName).collect(Collectors.toSet()),
+                name -> eventTypeRepository.save(EventType.builder().name(name).build()));
 
-        if (vehicleTypeRepository.count() == 0) {
-            List<String> vehicleTypes = List.of("TRUCK", "TRACTOR_TRAILER", "BUS", "VAN");
-            vehicleTypes.forEach(name -> vehicleTypeRepository.save(VehicleType.builder().name(name).build()));
-        }
+        List<String> vehicleTypes = List.of("TRUCK", "TRACTOR_TRAILER", "BUS", "VAN");
+        seedMissing(vehicleTypes, vehicleTypeRepository.findAll().stream().map(VehicleType::getName).collect(Collectors.toSet()),
+                name -> vehicleTypeRepository.save(VehicleType.builder().name(name).build()));
 
-        if (brandRepository.count() == 0) {
-            List<String> brands = List.of(
-                    "Chevrolet", "Hino", "International", "Freightliner",
-                    "Kenworth", "Volvo", "Mercedes-Benz", "Isuzu"
-            );
-            brands.forEach(name -> brandRepository.save(Brand.builder().name(name).build()));
-        }
+        List<String> brands = List.of(
+                "Chevrolet", "Hino", "International", "Freightliner",
+                "Kenworth", "Volvo", "Mercedes-Benz", "Isuzu"
+        );
+        seedMissing(brands, brandRepository.findAll().stream().map(Brand::getName).collect(Collectors.toSet()),
+                name -> brandRepository.save(Brand.builder().name(name).build()));
+    }
+
+    private void seedMissing(List<String> wanted, Set<String> existing, Consumer<String> save) {
+        wanted.stream().filter(name -> !existing.contains(name)).forEach(save);
     }
 
     private Role ensureRole(String name) {

@@ -1,7 +1,9 @@
 package com.wakedrive.backend.settings.service.impl;
 
 import com.wakedrive.backend.common.dto.StoredFileDTO;
+import com.wakedrive.backend.common.exception.DuplicateResourceException;
 import com.wakedrive.backend.common.service.FileStorageService;
+import com.wakedrive.backend.common.service.UploadKind;
 import com.wakedrive.backend.company.entity.Company;
 import com.wakedrive.backend.company.repository.CompanyRepository;
 import com.wakedrive.backend.security.CurrentUserProvider;
@@ -36,6 +38,10 @@ public class SettingsServiceImpl implements SettingsService {
     public CompanySettingsDTO updateSettings(SettingsRequestDTO request, MultipartFile alarmSound, MultipartFile logo) {
         Company company = currentCompany();
 
+        if (companyRepository.existsByNormalizedNitAndIdNot(request.getNit().replace("-", ""), company.getId())) {
+            throw new DuplicateResourceException("A company already exists with nit: " + request.getNit());
+        }
+
         company.setFaceRecognitionAlways(request.getFaceRecognitionAlways());
         company.setNotifyDeviceShutdown(request.getNotifyDeviceShutdown());
         company.setAlarmDurationSeconds(request.getAlarmDurationSeconds());
@@ -52,7 +58,7 @@ public class SettingsServiceImpl implements SettingsService {
         }
         if (alarmSound != null && !alarmSound.isEmpty()) {
             fileStorageService.delete(company.getAlarmSoundPath());
-            StoredFileDTO stored = fileStorageService.store(alarmSound, "alarm-sounds");
+            StoredFileDTO stored = fileStorageService.store(alarmSound, "alarm-sounds", UploadKind.AUDIO);
             company.setAlarmSoundPath(relativePath(stored.getUrl()));
             company.setAlarmSoundName(stored.getName());
             company.setAlarmSoundSize(stored.getSize());
@@ -66,7 +72,7 @@ public class SettingsServiceImpl implements SettingsService {
         }
         if (logo != null && !logo.isEmpty()) {
             fileStorageService.delete(company.getLogoPath());
-            StoredFileDTO stored = fileStorageService.store(logo, "logos");
+            StoredFileDTO stored = fileStorageService.store(logo, "logos", UploadKind.IMAGE);
             company.setLogoPath(relativePath(stored.getUrl()));
             company.setLogoName(stored.getName());
             company.setLogoSize(stored.getSize());

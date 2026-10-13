@@ -11,9 +11,11 @@ import com.wakedrive.backend.auth.entity.RefreshToken;
 import com.wakedrive.backend.auth.repository.RefreshTokenRepository;
 import com.wakedrive.backend.auth.service.AuthService;
 import com.wakedrive.backend.common.exception.ResourceNotFoundException;
+import com.wakedrive.backend.common.exception.TooManyAttemptsException;
 import com.wakedrive.backend.common.service.MailService;
 import com.wakedrive.backend.security.CurrentUserProvider;
 import com.wakedrive.backend.security.JwtService;
+import com.wakedrive.backend.security.LoginAttemptService;
 import com.wakedrive.backend.user.entity.User;
 import com.wakedrive.backend.user.repository.UserRepository;
 import java.time.Duration;
@@ -25,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
     private final MailService mailService;
     private final CurrentUserProvider currentUserProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final LoginAttemptService loginAttemptService;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
@@ -50,8 +54,17 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        if (loginAttemptService.isBlocked(request.getEmail())) {
+            throw new TooManyAttemptsException("Too many failed login attempts. Try again in 15 minutes");
+        }
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        } catch (AuthenticationException e) {
+            loginAttemptService.recordFailure(request.getEmail());
+            throw e;
+        }
+        loginAttemptService.reset(request.getEmail());
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.getEmail()));
 
@@ -78,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
             user.setResetToken(token);
             user.setResetTokenExpiry(LocalDateTime.now().plusHours(2));
             userRepository.save(user);
-            mailService.sendPasswordResetEmail(user.getEmail(), buildResetLink(token));
+            mailService.sendPasswordResetEmail(user.getEmail(), user.getName(), buildResetLink(token));
         });
     }
 
@@ -104,9 +117,13 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new BadCredentialsException("Current password is incorrect");
         }
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("The new password must be different from the current one");
+        }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setMustChangePassword(false);
         userRepository.save(user);
+        refreshTokenRepository.deleteByUser(user);
     }
 
     private AuthResponseDTO buildAuthResponse(User user) {
