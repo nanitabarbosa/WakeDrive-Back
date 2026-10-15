@@ -40,6 +40,8 @@ import org.springframework.util.StringUtils;
 @Transactional(readOnly = true)
 public class DashboardServiceImpl implements DashboardService {
 
+    private static final long MAX_RANGE_DAYS = 366;
+
     private final DriverRepository driverRepository;
     private final VehicleRepository vehicleRepository;
     private final DeviceRepository deviceRepository;
@@ -50,8 +52,8 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     public DashboardStatsDTO getStats(LocalDate from, LocalDate to) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
-        LocalDate rangeFrom = from != null ? from : LocalDate.now().minusDays(6);
-        LocalDate rangeTo = to != null ? to : LocalDate.now();
+        LocalDate rangeFrom = resolveFrom(from, to, 7);
+        LocalDate rangeTo = resolveTo(to);
         long days = ChronoUnit.DAYS.between(rangeFrom, rangeTo) + 1;
         LocalDate previousFrom = rangeFrom.minusDays(days);
         LocalDate previousTo = rangeFrom.minusDays(1);
@@ -67,35 +69,28 @@ public class DashboardServiceImpl implements DashboardService {
         long activeUsersCurrent = driverRepository.countByCompany_IdAndCreatedAtBetween(companyId, fromStart, toEnd);
         long activeUsersPrevious = driverRepository.countByCompany_IdAndCreatedAtBetween(companyId, prevFromStart, prevToEnd);
 
-        long devicesTotal = deviceRepository.countByCompany_Id(companyId);
-        long devicesActive = deviceRepository.countByCompany_IdAndStatus(companyId, RecordStatus.ACTIVE);
+        long devicesTotal = deviceRepository.count(devicesInRange(companyId, null, null, fromStart, toEnd));
+        long devicesActive = deviceRepository.count(devicesInRange(companyId, null, RecordStatus.ACTIVE, fromStart, toEnd));
         long devicesOffline = devicesTotal - devicesActive;
 
         long alertsCurrent = countAlerts(companyId, fromStart, toEnd);
         long alertsPrevious = countAlerts(companyId, prevFromStart, prevToEnd);
 
         return DashboardStatsDTO.builder()
-                .vehicles(TrendStatDTO.builder().total(vehicleRepository.countByCompany_Id(companyId)).variation(variation(vehiclesCurrent, vehiclesPrevious)).build())
-                .activeUsers(TrendStatDTO.builder().total(driverRepository.countByCompany_Id(companyId)).variation(variation(activeUsersCurrent, activeUsersPrevious)).build())
+                .vehicles(TrendStatDTO.builder().total(vehiclesCurrent).variation(variation(vehiclesCurrent, vehiclesPrevious)).build())
+                .activeUsers(TrendStatDTO.builder().total(activeUsersCurrent).variation(variation(activeUsersCurrent, activeUsersPrevious)).build())
                 .devices(DeviceCountsDTO.builder().total(devicesTotal).active(devicesActive).offline(devicesOffline).build())
                 .alertsToday(TrendStatDTO.builder().total(alertsCurrent).variation(variation(alertsCurrent, alertsPrevious)).build())
                 .build();
     }
 
     @Override
-    public List<DeviceSummaryDTO> getDevices(String search, RecordStatus status, int limit) {
+    public List<DeviceSummaryDTO> getDevices(String search, RecordStatus status, LocalDate from, LocalDate to, int limit) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
-        Specification<Device> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("company").get("id"), companyId));
-            if (StringUtils.hasText(search)) {
-                predicates.add(cb.like(cb.lower(root.get("serial")), "%" + search.toLowerCase() + "%"));
-            }
-            if (status != null) {
-                predicates.add(cb.equal(root.get("status"), status));
-            }
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
+        validateRange(from, to);
+        Specification<Device> spec = devicesInRange(companyId, search, status,
+                from != null ? from.atStartOfDay() : null,
+                to != null ? LocalDateTime.of(to, LocalTime.MAX) : null);
         return deviceRepository.findAll(spec).stream()
                 .limit(limit)
                 .map(this::toDeviceSummary)
@@ -103,8 +98,9 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List<AlertSummaryDTO> getAlerts(String search, Long eventTypeId, int limit) {
+    public List<AlertSummaryDTO> getAlerts(String search, Long eventTypeId, LocalDate from, LocalDate to, int limit) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
+        validateRange(from, to);
         Specification<Alert> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("driver").get("company").get("id"), companyId));
@@ -118,6 +114,12 @@ public class DashboardServiceImpl implements DashboardService {
             if (eventTypeId != null) {
                 predicates.add(cb.equal(root.get("eventType").get("id"), eventTypeId));
             }
+            if (from != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("detectedAt"), from.atStartOfDay()));
+            }
+            if (to != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("detectedAt"), LocalDateTime.of(to, LocalTime.MAX)));
+            }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
         return alertRepository.findAll(spec).stream()
@@ -128,10 +130,12 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List<DailyAlertsDTO> getAlertsByDay(int days) {
+    public List<DailyAlertsDTO> getAlertsByDay(LocalDate fromParam, LocalDate toParam, int daysParam) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
-        LocalDate from = LocalDate.now().minusDays(days - 1L);
-        List<Alert> alerts = companyAlerts(companyId, from.atStartOfDay(), LocalDateTime.of(LocalDate.now(), LocalTime.MAX));
+        LocalDate from = resolveFrom(fromParam, toParam, daysParam);
+        LocalDate to = resolveTo(toParam);
+        long days = ChronoUnit.DAYS.between(from, to) + 1;
+        List<Alert> alerts = companyAlerts(companyId, from.atStartOfDay(), LocalDateTime.of(to, LocalTime.MAX));
         Map<LocalDate, Long> grouped = alerts.stream()
                 .collect(Collectors.groupingBy(a -> a.getDetectedAt().toLocalDate(), Collectors.counting()));
 
@@ -144,10 +148,11 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List<UserAlertRankingDTO> getTopUsers(int days, int limit) {
+    public List<UserAlertRankingDTO> getTopUsers(LocalDate fromParam, LocalDate toParam, int days, int limit) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
-        LocalDate from = LocalDate.now().minusDays(days - 1L);
-        List<Alert> alerts = companyAlerts(companyId, from.atStartOfDay(), LocalDateTime.of(LocalDate.now(), LocalTime.MAX));
+        LocalDate from = resolveFrom(fromParam, toParam, days);
+        LocalDate to = resolveTo(toParam);
+        List<Alert> alerts = companyAlerts(companyId, from.atStartOfDay(), LocalDateTime.of(to, LocalTime.MAX));
 
         Map<Driver, Long> grouped = alerts.stream()
                 .collect(Collectors.groupingBy(Alert::getDriver, Collectors.counting()));
@@ -161,6 +166,52 @@ public class DashboardServiceImpl implements DashboardService {
                         .total(entry.getValue())
                         .build())
                 .toList();
+    }
+
+    /** Fecha final del rango: la recibida, o hoy. */
+    private LocalDate resolveTo(LocalDate to) {
+        return to != null ? to : LocalDate.now();
+    }
+
+    /** Fecha inicial del rango: la recibida, o los últimos {@code defaultDays} días hasta la fecha final. */
+    private LocalDate resolveFrom(LocalDate from, LocalDate to, int defaultDays) {
+        LocalDate rangeTo = resolveTo(to);
+        LocalDate rangeFrom = from != null ? from : rangeTo.minusDays(Math.max(defaultDays, 1) - 1L);
+        validateRange(rangeFrom, rangeTo);
+        return rangeFrom;
+    }
+
+    private void validateRange(LocalDate from, LocalDate to) {
+        if (from != null && to != null) {
+            if (from.isAfter(to)) {
+                throw new IllegalArgumentException("La fecha inicial no puede ser posterior a la final");
+            }
+            if (ChronoUnit.DAYS.between(from, to) > MAX_RANGE_DAYS) {
+                throw new IllegalArgumentException("El rango de fechas no puede superar " + MAX_RANGE_DAYS + " días");
+            }
+        }
+    }
+
+    /** Dispositivos de la empresa con última conexión dentro del rango (los límites nulos no filtran). */
+    private Specification<Device> devicesInRange(Long companyId, String search, RecordStatus status,
+                                                 LocalDateTime from, LocalDateTime to) {
+        return (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("company").get("id"), companyId));
+            if (StringUtils.hasText(search)) {
+                predicates.add(cb.like(cb.lower(root.get("serial")), "%" + search.toLowerCase() + "%"));
+            }
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (from != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("lastConnection"), from));
+            }
+            if (to != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("lastConnection"), to));
+            }
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
     }
 
     private long countAlerts(Long companyId, LocalDateTime from, LocalDateTime to) {

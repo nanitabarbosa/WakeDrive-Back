@@ -34,27 +34,36 @@ public class DashboardController {
     public List<DeviceSummaryDTO> getDevices(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) RecordStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "5") int limit) {
-        return dashboardService.getDevices(search, status, limit);
+        return dashboardService.getDevices(search, status, from, to, limit);
     }
 
     @GetMapping("/alerts")
     public List<AlertSummaryDTO> getAlerts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long eventTypeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "5") int limit) {
-        return dashboardService.getAlerts(search, eventTypeId, limit);
+        return dashboardService.getAlerts(search, eventTypeId, from, to, limit);
     }
 
     @GetMapping("/alerts/by-day")
-    public List<DailyAlertsDTO> getAlertsByDay(@RequestParam(defaultValue = "7") int days) {
-        return dashboardService.getAlertsByDay(days);
+    public List<DailyAlertsDTO> getAlertsByDay(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(defaultValue = "7") int days) {
+        return dashboardService.getAlertsByDay(from, to, days);
     }
 
     @GetMapping("/alerts/top-users")
     public List<UserAlertRankingDTO> getTopUsers(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "7") int days,
             @RequestParam(defaultValue = "5") int limit) {
-        return dashboardService.getTopUsers(days, limit);
+        return dashboardService.getTopUsers(from, to, days, limit);
     }
 }
