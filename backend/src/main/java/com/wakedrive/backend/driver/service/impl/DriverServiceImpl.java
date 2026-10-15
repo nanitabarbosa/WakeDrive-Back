@@ -62,10 +62,10 @@ public class DriverServiceImpl implements DriverService {
     public DriverDTO create(DriverRequestDTO request) {
         String document = TextNormalizer.code(request.getDocument());
         if (driverRepository.findByDocument(document).isPresent()) {
-            throw new DuplicateResourceException("Driver already exists with document: " + document);
+            throw new DuplicateResourceException("document", "Ya existe un conductor con el documento " + document);
         }
         Company company = companyRepository.findById(currentUserProvider.getCurrentCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada"));
         Driver driver = new Driver();
         applyRequest(driver, request);
         driver.setCompany(company);
@@ -78,7 +78,7 @@ public class DriverServiceImpl implements DriverService {
         String document = TextNormalizer.code(request.getDocument());
         if (!driver.getDocument().equals(document)
                 && driverRepository.findByDocument(document).isPresent()) {
-            throw new DuplicateResourceException("Driver already exists with document: " + document);
+            throw new DuplicateResourceException("document", "Ya existe un conductor con el documento " + document);
         }
         applyRequest(driver, request);
         return toDTO(driverRepository.save(driver));
@@ -108,9 +108,9 @@ public class DriverServiceImpl implements DriverService {
 
     private Driver findEntity(Long id) {
         Driver driver = driverRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Driver not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Conductor no encontrado"));
         if (!driver.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {
-            throw new ResourceNotFoundException("Driver not found: " + id);
+            throw new ResourceNotFoundException("Conductor no encontrado");
         }
         return driver;
     }

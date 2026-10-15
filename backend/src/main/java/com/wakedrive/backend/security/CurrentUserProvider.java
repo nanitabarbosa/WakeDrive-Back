@@ -13,7 +13,7 @@ public class CurrentUserProvider {
         if (principal instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getUser();
         }
-        throw new ResourceNotFoundException("No authenticated user in context");
+        throw new ResourceNotFoundException("No hay un usuario autenticado");
     }
 
     public boolean isSuperAdmin() {
@@ -23,7 +23,7 @@ public class CurrentUserProvider {
     public Long getCurrentCompanyId() {
         User user = getCurrentUser();
         if (user.getCompany() == null) {
-            throw new ResourceNotFoundException("Current user has no company assigned");
+            throw new ResourceNotFoundException("Tu usuario no tiene una empresa asignada");
         }
         return user.getCompany().getId();
     }

@@ -32,7 +32,7 @@ public class BrandServiceImpl implements BrandService {
     @Transactional
     public BrandDTO create(BrandRequestDTO request) {
         if (brandRepository.findByName(request.getName()).isPresent()) {
-            throw new DuplicateResourceException("Brand already exists with name: " + request.getName());
+            throw new DuplicateResourceException("name", "Ya existe una marca con el nombre " + request.getName());
         }
         Brand brand = Brand.builder().name(request.getName()).build();
         return toDTO(brandRepository.save(brand));
@@ -45,7 +45,7 @@ public class BrandServiceImpl implements BrandService {
         brandRepository.findByName(request.getName())
                 .filter(existing -> !existing.getId().equals(id))
                 .ifPresent(existing -> {
-                    throw new DuplicateResourceException("Brand already exists with name: " + request.getName());
+                    throw new DuplicateResourceException("name", "Ya existe una marca con el nombre " + request.getName());
                 });
         brand.setName(request.getName());
         return toDTO(brandRepository.save(brand));
@@ -59,7 +59,7 @@ public class BrandServiceImpl implements BrandService {
 
     private Brand findEntity(Long id) {
         return brandRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Brand not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Marca no encontrada"));
     }
 
     private BrandDTO toDTO(Brand brand) {

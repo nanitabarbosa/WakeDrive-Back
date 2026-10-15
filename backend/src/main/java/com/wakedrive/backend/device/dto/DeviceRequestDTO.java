@@ -14,9 +14,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DeviceRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Es obligatorio")
     private String serial;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private RecordStatus status;
 }

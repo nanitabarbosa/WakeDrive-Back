@@ -64,7 +64,7 @@ public class CompanyServiceImpl implements CompanyService {
     @Transactional(readOnly = true)
     public PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Long companyId, String search, int page, int size) {
         if (!companyRepository.existsById(companyId)) {
-            throw new ResourceNotFoundException("Company not found: " + companyId);
+            throw new ResourceNotFoundException("Empresa no encontrada");
         }
         Specification<Device> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();

@@ -57,10 +57,10 @@ public class DeviceServiceImpl implements DeviceService {
     public DeviceDTO create(DeviceRequestDTO request) {
         String serial = TextNormalizer.code(request.getSerial());
         if (deviceRepository.findBySerial(serial).isPresent()) {
-            throw new DuplicateResourceException("Device already exists with serial: " + serial);
+            throw new DuplicateResourceException("serial", "Ya existe un dispositivo con el serial " + serial);
         }
         Company company = companyRepository.findById(currentUserProvider.getCurrentCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada"));
         Device device = new Device();
         device.setSerial(serial);
         device.setStatus(request.getStatus());
@@ -74,7 +74,7 @@ public class DeviceServiceImpl implements DeviceService {
         String serial = TextNormalizer.code(request.getSerial());
         if (!device.getSerial().equals(serial)
                 && deviceRepository.findBySerial(serial).isPresent()) {
-            throw new DuplicateResourceException("Device already exists with serial: " + serial);
+            throw new DuplicateResourceException("serial", "Ya existe un dispositivo con el serial " + serial);
         }
         device.setSerial(serial);
         device.setStatus(request.getStatus());
@@ -97,9 +97,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     private Device findEntity(Long id) {
         Device device = deviceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Dispositivo no encontrado"));
         if (!device.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {
-            throw new ResourceNotFoundException("Device not found: " + id);
+            throw new ResourceNotFoundException("Dispositivo no encontrado");
         }
         return device;
     }

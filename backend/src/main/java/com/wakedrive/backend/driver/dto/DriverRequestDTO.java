@@ -17,23 +17,23 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DriverRequestDTO {
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String fullName;
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String document;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Email(message = "Ingresa un correo válido")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String email;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
+    @NotBlank(message = "Es obligatorio")
+    @Pattern(regexp = "^\\d{10}$", message = "Debe tener exactamente 10 dígitos")
     private String phone;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private RecordStatus status;
 }

@@ -1,6 +1,7 @@
 package com.wakedrive.backend.common.service.impl;
 
 import com.wakedrive.backend.common.dto.StoredFileDTO;
+import com.wakedrive.backend.common.exception.InvalidFileException;
 import com.wakedrive.backend.common.service.FileStorageService;
 import com.wakedrive.backend.common.service.UploadKind;
 import java.io.IOException;
@@ -27,7 +28,8 @@ public class FileStorageServiceImpl implements FileStorageService {
     @Override
     public StoredFileDTO store(MultipartFile file, String subFolder, UploadKind kind) {
         if (file.getSize() > kind.getMaxBytes()) {
-            throw new IllegalArgumentException("El archivo supera el tamaño máximo de " + kind.getMaxLabel());
+            throw new InvalidFileException(InvalidFileException.TOO_LARGE, kind.getFormField(),
+                    "El archivo supera el tamaño máximo de " + kind.getMaxLabel());
         }
 
         try {
@@ -36,7 +38,8 @@ public class FileStorageServiceImpl implements FileStorageService {
             Path root = Path.of(uploadsDir).toAbsolutePath().normalize();
             Path folder = root.resolve(subFolder).normalize();
             if (!folder.startsWith(root)) {
-                throw new IllegalArgumentException("Invalid upload folder");
+                throw new InvalidFileException(InvalidFileException.INVALID_PATH, kind.getFormField(),
+                        "La carpeta de destino del archivo no es válida");
             }
             Files.createDirectories(folder);
 
@@ -81,7 +84,8 @@ public class FileStorageServiceImpl implements FileStorageService {
         };
 
         if (extension == null) {
-            throw new IllegalArgumentException("Formato no permitido. Solo se aceptan archivos " + kind.getFormatsLabel());
+            throw new InvalidFileException(InvalidFileException.INVALID_FORMAT, kind.getFormField(),
+                    "Formato no permitido. Solo se aceptan archivos " + kind.getFormatsLabel());
         }
         return extension;
     }

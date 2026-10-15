@@ -41,7 +41,7 @@ public class SettingsServiceImpl implements SettingsService {
 
         String nit = TextNormalizer.code(request.getNit());
         if (companyRepository.existsByNormalizedNitAndIdNot(nit.replace("-", ""), company.getId())) {
-            throw new DuplicateResourceException("A company already exists with nit: " + request.getNit());
+            throw new DuplicateResourceException("nit", "Ya existe una empresa con el NIT " + request.getNit());
         }
 
         company.setFaceRecognitionAlways(request.getFaceRecognitionAlways());

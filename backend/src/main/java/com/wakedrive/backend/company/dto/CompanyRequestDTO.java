@@ -15,19 +15,19 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CompanyRequestDTO {
 
-    @NotBlank
-    @Size(max = 30)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 30, message = "Máximo 30 caracteres")
     private String nit;
 
-    @NotBlank
+    @NotBlank(message = "Es obligatorio")
     private String name;
 
-    @Size(max = 100)
+    @Size(max = 100, message = "Máximo 100 caracteres")
     private String address;
 
-    @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
+    @Pattern(regexp = "^\\d{10}$", message = "Debe tener exactamente 10 dígitos")
     private String phone;
 
-    @Email
+    @Email(message = "Ingresa un correo válido")
     private String email;
 }

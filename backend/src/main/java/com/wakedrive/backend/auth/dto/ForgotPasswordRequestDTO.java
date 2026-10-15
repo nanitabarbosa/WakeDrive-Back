@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ForgotPasswordRequestDTO {
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "Es obligatorio")
+    @Email(message = "Ingresa un correo válido")
     private String email;
 }

@@ -14,21 +14,21 @@ import lombok.Setter;
 @AllArgsConstructor
 public class VehicleRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Es obligatorio")
     private String plate;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Long brandId;
 
-    @NotBlank
+    @NotBlank(message = "Es obligatorio")
     private String model;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Integer year;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Long vehicleTypeId;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private RecordStatus status;
 }

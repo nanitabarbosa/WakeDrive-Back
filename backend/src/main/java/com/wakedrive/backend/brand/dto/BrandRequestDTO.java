@@ -12,6 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class BrandRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Es obligatorio")
     private String name;
 }

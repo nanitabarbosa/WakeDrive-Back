@@ -47,9 +47,9 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public void markAsRead(Long id) {
         Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Notification not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Notificación no encontrada"));
         if (!notification.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {
-            throw new ResourceNotFoundException("Notification not found: " + id);
+            throw new ResourceNotFoundException("Notificación no encontrada");
         }
         notification.setRead(true);
         notificationRepository.save(notification);

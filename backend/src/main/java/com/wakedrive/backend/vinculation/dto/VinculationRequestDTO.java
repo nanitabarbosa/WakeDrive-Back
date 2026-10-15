@@ -13,12 +13,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class VinculationRequestDTO {
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Long userId;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Long vehicleId;
 
-    @NotBlank
+    @NotBlank(message = "Es obligatorio")
     private String deviceSerial;
 }

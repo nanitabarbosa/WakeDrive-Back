@@ -65,16 +65,16 @@ public class VinculationServiceImpl implements VinculationService {
 
         Driver driver = driverRepository.findById(request.getUserId())
                 .filter(d -> d.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResourceNotFoundException("Driver not found: " + request.getUserId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Conductor no encontrado"));
         Vehicle vehicle = vehicleRepository.findById(request.getVehicleId())
                 .filter(v -> v.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found: " + request.getVehicleId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
         Device device = deviceRepository.findBySerial(request.getDeviceSerial())
                 .filter(d -> d.getCompany().getId().equals(companyId))
-                .orElseThrow(() -> new ResourceNotFoundException("Device not found with serial: " + request.getDeviceSerial()));
+                .orElseThrow(() -> new ResourceNotFoundException("No existe un dispositivo con el serial " + request.getDeviceSerial()));
 
         if (vinculationRepository.findByDevice_Serial(device.getSerial()).isPresent()) {
-            throw new DuplicateResourceException("Device already linked: " + device.getSerial());
+            throw new DuplicateResourceException("deviceSerial", "El dispositivo " + device.getSerial() + " ya está vinculado");
         }
 
         Vinculation vinculation = Vinculation.builder()
@@ -88,9 +88,9 @@ public class VinculationServiceImpl implements VinculationService {
     @Override
     public void delete(Long id) {
         Vinculation vinculation = vinculationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Vinculation not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Vinculación no encontrada"));
         if (!vinculation.getDriver().getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {
-            throw new ResourceNotFoundException("Vinculation not found: " + id);
+            throw new ResourceNotFoundException("Vinculación no encontrada");
         }
         vinculationRepository.delete(vinculation);
     }

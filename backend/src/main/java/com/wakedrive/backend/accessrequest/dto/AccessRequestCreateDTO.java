@@ -16,35 +16,35 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AccessRequestCreateDTO {
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String companyName;
 
-    @NotBlank
-    @Pattern(regexp = "^[\\d-]{5,15}$")
+    @NotBlank(message = "Es obligatorio")
+    @Pattern(regexp = "^[\\d-]{5,15}$", message = "Debe tener entre 5 y 15 caracteres, solo dígitos y guiones")
     private String nit;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Long cityId;
 
-    @NotBlank
-    @Size(max = 150)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 150, message = "Máximo 150 caracteres")
     private String address;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
+    @NotBlank(message = "Es obligatorio")
+    @Pattern(regexp = "^\\d{10}$", message = "Debe tener exactamente 10 dígitos")
     private String companyPhone;
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String adminName;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Email(message = "Ingresa un correo válido")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String adminEmail;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
+    @NotBlank(message = "Es obligatorio")
+    @Pattern(regexp = "^\\d{10}$", message = "Debe tener exactamente 10 dígitos")
     private String adminPhone;
 }

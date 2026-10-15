@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDTO login(LoginRequestDTO request) {
         String email = TextNormalizer.email(request.getEmail());
         if (loginAttemptService.isBlocked(email)) {
-            throw new TooManyAttemptsException("Too many failed login attempts. Try again in 15 minutes");
+            throw new TooManyAttemptsException("Demasiados intentos fallidos. Inténtalo de nuevo en 15 minutos");
         }
         try {
             authenticationManager.authenticate(
@@ -68,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
         }
         loginAttemptService.reset(email);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
 
         return buildAuthResponse(user);
     }
@@ -76,9 +76,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDTO refresh(RefreshTokenRequestDTO request) {
         RefreshToken stored = refreshTokenRepository.findByToken(request.getRefreshToken())
-                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+                .orElseThrow(() -> new BadCredentialsException("La sesión no es válida. Inicia sesión de nuevo"));
         if (stored.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BadCredentialsException("Refresh token expired");
+            throw new BadCredentialsException("La sesión expiró. Inicia sesión de nuevo");
         }
 
         User user = stored.getUser();
@@ -117,10 +117,10 @@ public class AuthServiceImpl implements AuthService {
     public void changePassword(ChangePasswordRequestDTO request) {
         User user = currentUserProvider.getCurrentUser();
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Current password is incorrect");
+            throw new BadCredentialsException("La contraseña actual es incorrecta");
         }
         if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("The new password must be different from the current one");
+            throw new IllegalArgumentException("La nueva contraseña debe ser diferente a la actual");
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setMustChangePassword(false);
@@ -151,9 +151,9 @@ public class AuthServiceImpl implements AuthService {
 
     private User findValidResetToken(String token) {
         User user = userRepository.findByResetToken(token)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid or expired token"));
+                .orElseThrow(() -> new ResourceNotFoundException("El enlace es inválido o ha expirado"));
         if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new ResourceNotFoundException("Invalid or expired token");
+            throw new ResourceNotFoundException("El enlace es inválido o ha expirado");
         }
         return user;
     }

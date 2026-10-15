@@ -56,22 +56,22 @@ public class AccessRequestServiceImpl implements AccessRequestService {
     @Override
     public void create(AccessRequestCreateDTO request) {
         City city = cityRepository.findById(request.getCityId())
-                .orElseThrow(() -> new ResourceNotFoundException("City not found: " + request.getCityId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Ciudad no encontrada"));
 
         String adminEmail = TextNormalizer.email(request.getAdminEmail());
         String nit = normalizeNit(request.getNit());
         if (companyRepository.existsByNormalizedNit(nit)) {
-            throw new DuplicateResourceException("A company already exists with nit: " + request.getNit());
+            throw new DuplicateResourceException("nit", "Ya existe una empresa con el NIT " + request.getNit());
         }
         if (accessRequestRepository.existsByNormalizedNitAndStatus(nit, AccessRequestStatus.PENDING)) {
-            throw new DuplicateResourceException("A pending access request already exists with nit: " + request.getNit());
+            throw new DuplicateResourceException("nit", "Ya hay una solicitud pendiente con el NIT " + request.getNit());
         }
 
         if (userRepository.existsByEmail(adminEmail)) {
-            throw new DuplicateResourceException("A user already exists with email: " + adminEmail);
+            throw new DuplicateResourceException("adminEmail", "Ya existe un usuario con el correo " + adminEmail);
         }
         if (accessRequestRepository.existsByAdminEmailIgnoreCaseAndStatus(adminEmail, AccessRequestStatus.PENDING)) {
-            throw new DuplicateResourceException("A pending access request already exists with email: " + adminEmail);
+            throw new DuplicateResourceException("adminEmail", "Ya hay una solicitud pendiente con el correo " + adminEmail);
         }
 
         AccessRequest accessRequest = AccessRequest.builder()
@@ -114,11 +114,11 @@ public class AccessRequestServiceImpl implements AccessRequestService {
         AccessRequest accessRequest = findPendingEntity(id);
 
         if (companyRepository.existsByNormalizedNit(normalizeNit(accessRequest.getNit()))) {
-            throw new DuplicateResourceException("A company already exists with nit: " + accessRequest.getNit());
+            throw new DuplicateResourceException("nit", "Ya existe una empresa con el NIT " + accessRequest.getNit());
         }
 
         if (userRepository.existsByEmail(TextNormalizer.email(accessRequest.getAdminEmail()))) {
-            throw new DuplicateResourceException("A user already exists with email: " + accessRequest.getAdminEmail());
+            throw new DuplicateResourceException("adminEmail", "Ya existe un usuario con el correo " + accessRequest.getAdminEmail());
         }
 
         Company company = Company.builder()
@@ -131,7 +131,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
         companyRepository.save(company);
 
         Role adminRole = roleRepository.findByName(ADMIN_ROLE)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + ADMIN_ROLE));
+                .orElseThrow(() -> new ResourceNotFoundException("Rol no encontrado"));
 
         String generatedPassword = generatePassword();
         User admin = User.builder()
@@ -170,7 +170,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
     private AccessRequest findPendingEntity(Long id) {
         AccessRequest accessRequest = findEntity(id);
         if (accessRequest.getStatus() != AccessRequestStatus.PENDING) {
-            throw new InvalidStateException("Access request is not pending: " + id);
+            throw new InvalidStateException("La solicitud de acceso ya no está pendiente");
         }
         return accessRequest;
     }
@@ -185,7 +185,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
 
     private AccessRequest findEntity(Long id) {
         return accessRequestRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Access request not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitud de acceso no encontrada"));
     }
 
     private AccessRequestDTO toDTO(AccessRequest accessRequest) {

@@ -14,11 +14,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ChangePasswordRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Es obligatorio")
     private String currentPassword;
 
-    @NotBlank
-    @Size(min = 8, max = 72)
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$", message = "La contraseña debe incluir letras y números")
+    @NotBlank(message = "Es obligatorio")
+    @Size(min = 8, max = 72, message = "Debe tener entre 8 y 72 caracteres")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$", message = "Debe incluir letras y números")
     private String newPassword;
 }

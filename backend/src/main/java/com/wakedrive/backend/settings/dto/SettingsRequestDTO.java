@@ -18,36 +18,36 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SettingsRequestDTO {
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Boolean faceRecognitionAlways;
 
-    @NotNull
+    @NotNull(message = "Es obligatorio")
     private Boolean notifyDeviceShutdown;
 
-    @NotNull
-    @Min(1)
-    @Max(60)
+    @NotNull(message = "Es obligatorio")
+    @Min(value = 1, message = "Debe ser al menos 1")
+    @Max(value = 60, message = "No puede ser mayor a 60")
     private Integer alarmDurationSeconds;
 
-    @NotBlank
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String companyName;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{6,12}(-\\d)?$")
+    @NotBlank(message = "Es obligatorio")
+    @Pattern(regexp = "^\\d{6,12}(-\\d)?$", message = "Debe tener entre 6 y 12 dígitos, con guion y dígito de verificación opcional (ej. 900123456-1)")
     private String nit;
 
-    @NotBlank
-    @Size(max = 150)
+    @NotBlank(message = "Es obligatorio")
+    @Size(max = 150, message = "Máximo 150 caracteres")
     private String address;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
+    @NotBlank(message = "Es obligatorio")
+    @Pattern(regexp = "^\\d{10}$", message = "Debe tener exactamente 10 dígitos")
     private String phone;
 
-    @NotBlank
-    @Email
-    @Size(max = 255)
+    @NotBlank(message = "Es obligatorio")
+    @Email(message = "Ingresa un correo válido")
+    @Size(max = 255, message = "Máximo 255 caracteres")
     private String email;
 
     private boolean removeAlarmSound;

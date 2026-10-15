@@ -73,10 +73,10 @@ public class VehicleServiceImpl implements VehicleService {
     public VehicleDTO create(VehicleRequestDTO request) {
         String plate = TextNormalizer.code(request.getPlate());
         if (vehicleRepository.findByPlate(plate).isPresent()) {
-            throw new DuplicateResourceException("Vehicle already exists with plate: " + plate);
+            throw new DuplicateResourceException("plate", "Ya existe un vehículo con la placa " + plate);
         }
         Company company = companyRepository.findById(currentUserProvider.getCurrentCompanyId())
-                .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada"));
         Vehicle vehicle = new Vehicle();
         applyRequest(vehicle, request);
         vehicle.setCompany(company);
@@ -89,7 +89,7 @@ public class VehicleServiceImpl implements VehicleService {
         String plate = TextNormalizer.code(request.getPlate());
         if (!vehicle.getPlate().equals(plate)
                 && vehicleRepository.findByPlate(plate).isPresent()) {
-            throw new DuplicateResourceException("Vehicle already exists with plate: " + plate);
+            throw new DuplicateResourceException("plate", "Ya existe un vehículo con la placa " + plate);
         }
         applyRequest(vehicle, request);
         return toDTO(vehicleRepository.save(vehicle));
@@ -111,9 +111,9 @@ public class VehicleServiceImpl implements VehicleService {
 
     private void applyRequest(Vehicle vehicle, VehicleRequestDTO request) {
         Brand brand = brandRepository.findById(request.getBrandId())
-                .orElseThrow(() -> new ResourceNotFoundException("Brand not found: " + request.getBrandId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Marca no encontrada"));
         VehicleType vehicleType = vehicleTypeRepository.findById(request.getVehicleTypeId())
-                .orElseThrow(() -> new ResourceNotFoundException("Vehicle type not found: " + request.getVehicleTypeId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Tipo de vehículo no encontrado"));
         vehicle.setPlate(TextNormalizer.code(request.getPlate()));
         vehicle.setBrand(brand);
         vehicle.setModel(request.getModel());
@@ -124,9 +124,9 @@ public class VehicleServiceImpl implements VehicleService {
 
     private Vehicle findEntity(Long id) {
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
         if (!vehicle.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {
-            throw new ResourceNotFoundException("Vehicle not found: " + id);
+            throw new ResourceNotFoundException("Vehículo no encontrado");
         }
         return vehicle;
     }
