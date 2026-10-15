@@ -1,8 +1,10 @@
 package com.wakedrive.backend.company.service.impl;
 
 import com.wakedrive.backend.common.dto.PageResponseDTO;
+import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.common.exception.ResourceNotFoundException;
 import com.wakedrive.backend.company.dto.CompanyDTO;
+import com.wakedrive.backend.company.dto.CompanyDeviceCountsDTO;
 import com.wakedrive.backend.company.dto.CompanyDeviceDTO;
 import com.wakedrive.backend.company.dto.CompanySummaryDTO;
 import com.wakedrive.backend.company.entity.Company;
@@ -62,7 +64,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Long companyId, String search, int page, int size) {
+    public PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Long companyId, String search, RecordStatus status, int page, int size) {
         if (!companyRepository.existsById(companyId)) {
             throw new ResourceNotFoundException("Empresa no encontrada");
         }
@@ -72,12 +74,27 @@ public class CompanyServiceImpl implements CompanyService {
             if (StringUtils.hasText(search)) {
                 predicates.add(cb.like(cb.lower(root.get("serial")), "%" + search.toLowerCase() + "%"));
             }
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
         Page<Device> result = deviceRepository.findAll(spec, PageRequest.of(page, size));
         return PageResponseDTO.of(result, device -> CompanyDeviceDTO.builder()
                 .id(device.getId())
                 .serial(device.getSerial())
+                .status(device.getStatus())
                 .build());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CompanyDeviceCountsDTO getCompanyDeviceCounts(Long companyId) {
+        if (!companyRepository.existsById(companyId)) {
+            throw new ResourceNotFoundException("Empresa no encontrada");
+        }
+        long active = deviceRepository.countByCompany_IdAndStatus(companyId, RecordStatus.ACTIVE);
+        long inactive = deviceRepository.countByCompany_IdAndStatus(companyId, RecordStatus.INACTIVE);
+        return CompanyDeviceCountsDTO.builder().total(active + inactive).active(active).inactive(inactive).build();
     }
 }

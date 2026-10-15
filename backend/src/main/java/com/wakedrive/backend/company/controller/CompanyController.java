@@ -1,7 +1,9 @@
 package com.wakedrive.backend.company.controller;
 
 import com.wakedrive.backend.common.dto.PageResponseDTO;
+import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.company.dto.CompanyDTO;
+import com.wakedrive.backend.company.dto.CompanyDeviceCountsDTO;
 import com.wakedrive.backend.company.dto.CompanyDeviceDTO;
 import com.wakedrive.backend.company.dto.CompanySummaryDTO;
 import com.wakedrive.backend.company.service.CompanyService;
@@ -33,8 +35,14 @@ public class CompanyController {
     public PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(
             @PathVariable Long companyId,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) RecordStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return companyService.getCompanyDevices(companyId, search, page, size);
+        return companyService.getCompanyDevices(companyId, search, status, page, size);
+    }
+
+    @GetMapping("/{companyId}/devices/counts")
+    public CompanyDeviceCountsDTO getCompanyDeviceCounts(@PathVariable Long companyId) {
+        return companyService.getCompanyDeviceCounts(companyId);
     }
 }

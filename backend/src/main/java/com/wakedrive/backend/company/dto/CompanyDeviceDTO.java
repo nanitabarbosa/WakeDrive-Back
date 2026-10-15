@@ -1,5 +1,6 @@
 package com.wakedrive.backend.company.dto;
 
+import com.wakedrive.backend.common.entity.RecordStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,4 +16,5 @@ public class CompanyDeviceDTO {
 
     private Long id;
     private String serial;
+    private RecordStatus status;
 }
