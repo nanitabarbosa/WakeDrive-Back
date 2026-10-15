@@ -1,5 +1,6 @@
 package com.wakedrive.backend.settings.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -43,6 +44,11 @@ public class SettingsRequestDTO {
     @NotBlank
     @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener exactamente 10 dígitos")
     private String phone;
+
+    @NotBlank
+    @Email
+    @Size(max = 255)
+    private String email;
 
     private boolean removeAlarmSound;
 

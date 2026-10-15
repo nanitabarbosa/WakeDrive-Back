@@ -51,6 +51,7 @@ public class SettingsServiceImpl implements SettingsService {
         company.setNit(nit);
         company.setAddress(request.getAddress());
         company.setPhone(request.getPhone());
+        company.setEmail(TextNormalizer.email(request.getEmail()));
 
         if (request.isRemoveAlarmSound()) {
             fileStorageService.delete(company.getAlarmSoundPath());
@@ -116,6 +117,7 @@ public class SettingsServiceImpl implements SettingsService {
                 .nit(company.getNit())
                 .address(company.getAddress())
                 .phone(company.getPhone())
+                .email(company.getEmail())
                 .logo(logo)
                 .build();
     }

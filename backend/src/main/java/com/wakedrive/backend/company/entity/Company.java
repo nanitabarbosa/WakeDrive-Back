@@ -27,13 +27,13 @@ public class Company {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "address", length = 150)
+    @Column(name = "address", length = 150, nullable = false)
     private String address;
 
-    @Column(name = "phone", length = 20)
+    @Column(name = "phone", length = 20, nullable = false)
     private String phone;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "face_recognition_always", nullable = false)

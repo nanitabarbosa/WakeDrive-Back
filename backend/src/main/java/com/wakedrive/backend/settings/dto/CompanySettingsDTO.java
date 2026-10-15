@@ -22,5 +22,6 @@ public class CompanySettingsDTO {
     private String nit;
     private String address;
     private String phone;
+    private String email;
     private StoredFileDTO logo;
 }
