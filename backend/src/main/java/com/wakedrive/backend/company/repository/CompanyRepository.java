@@ -15,7 +15,4 @@ public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpec
 
     @Query("select count(c) > 0 from Company c where replace(c.nit, '-', '') = :nit")
     boolean existsByNormalizedNit(@Param("nit") String nit);
-
-    @Query("select count(c) > 0 from Company c where replace(c.nit, '-', '') = :nit and c.id <> :id")
-    boolean existsByNormalizedNitAndIdNot(@Param("nit") String nit, @Param("id") Long id);
 }

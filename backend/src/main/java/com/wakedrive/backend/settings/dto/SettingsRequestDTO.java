@@ -34,10 +34,6 @@ public class SettingsRequestDTO {
     private String companyName;
 
     @NotBlank(message = "Es obligatorio")
-    @Pattern(regexp = "^\\d{6,12}(-\\d)?$", message = "Debe tener entre 6 y 12 dígitos, con guion y dígito de verificación opcional (ej. 900123456-1)")
-    private String nit;
-
-    @NotBlank(message = "Es obligatorio")
     @Size(max = 150, message = "Máximo 150 caracteres")
     private String address;
 
