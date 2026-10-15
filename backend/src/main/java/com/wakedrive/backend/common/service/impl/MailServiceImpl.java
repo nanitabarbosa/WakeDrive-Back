@@ -217,7 +217,7 @@ public class MailServiceImpl implements MailService {
                       <tr>
                         <td class="px" style="padding:32px 40px 8px 40px;">
                           <p style="margin:0 0 12px 0; font-size:16px; line-height:24px; color:#0F172A;">
-                            Hola [NOMBRE_USUARIO],
+                            Hola <strong>[NOMBRE_USUARIO]</strong>,
                           </p>
                           <p style="margin:0; font-size:15px; line-height:24px; color:#475569;">
                             Recibimos una solicitud para restablecer la contraseña de tu cuenta de WakeDrive. Haz clic en el botón para crear una nueva contraseña:
@@ -339,7 +339,7 @@ public class MailServiceImpl implements MailService {
                       <tr>
                         <td class="px" style="padding:32px 40px 8px 40px;">
                           <p style="margin:0 0 12px 0; font-size:16px; line-height:24px; color:#0F172A;">
-                            Hola [NOMBRE_USUARIO],
+                            Hola <strong>[NOMBRE_USUARIO]</strong>,
                           </p>
                           <p style="margin:0; font-size:15px; line-height:24px; color:#475569;">
                             Revisamos la solicitud de registro de <strong style="color:#0F172A;">[NOMBRE_EMPRESA]</strong> en WakeDrive y, por el momento, no pudimos aceptarla. No te preocupes: puedes corregir la información y volver a intentarlo.
