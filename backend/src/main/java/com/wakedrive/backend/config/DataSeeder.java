@@ -14,6 +14,7 @@ import com.wakedrive.backend.user.repository.UserRepository;
 import com.wakedrive.backend.vehicletype.entity.VehicleType;
 import com.wakedrive.backend.vehicletype.repository.VehicleTypeRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -70,16 +71,35 @@ public class DataSeeder implements CommandLineRunner {
         seedMissing(eventTypes, eventTypeRepository.findAll().stream().map(EventType::getName).collect(Collectors.toSet()),
                 name -> eventTypeRepository.save(EventType.builder().name(name).build()));
 
-        List<String> vehicleTypes = List.of("TRUCK", "TRACTOR_TRAILER", "BUS", "VAN");
+        renameVehicleTypes(Map.of(
+                "TRUCK", "Camión",
+                "TRACTOR_TRAILER", "Tractomula",
+                "BUS", "Bus",
+                "VAN", "Camioneta"));
+
+        List<String> vehicleTypes = List.of("Camión", "Tractomula", "Bus", "Camioneta");
         seedMissing(vehicleTypes, vehicleTypeRepository.findAll().stream().map(VehicleType::getName).collect(Collectors.toSet()),
                 name -> vehicleTypeRepository.save(VehicleType.builder().name(name).build()));
 
         List<String> brands = List.of(
                 "Chevrolet", "Hino", "International", "Freightliner",
-                "Kenworth", "Volvo", "Mercedes-Benz", "Isuzu"
+                "Kenworth", "Volvo", "Mercedes-Benz", "Isuzu",
+                "Scania", "Mack", "Ford", "Toyota", "Renault", "Nissan",
+                "JAC", "Foton", "Hyundai", "Kia", "Mazda", "Volkswagen",
+                "Dongfeng", "Iveco", "Peterbilt", "DAF", "MAN", "Fiat"
         );
         seedMissing(brands, brandRepository.findAll().stream().map(Brand::getName).collect(Collectors.toSet()),
                 name -> brandRepository.save(Brand.builder().name(name).build()));
+    }
+
+    private void renameVehicleTypes(Map<String, String> oldToNew) {
+        vehicleTypeRepository.findAll().forEach(type -> {
+            String newName = oldToNew.get(type.getName());
+            if (newName != null) {
+                type.setName(newName);
+                vehicleTypeRepository.save(type);
+            }
+        });
     }
 
     private void seedMissing(List<String> wanted, Set<String> existing, Consumer<String> save) {
