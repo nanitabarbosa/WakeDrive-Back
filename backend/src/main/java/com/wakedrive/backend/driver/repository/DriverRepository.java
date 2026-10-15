@@ -1,5 +1,6 @@
 package com.wakedrive.backend.driver.repository;
 
+import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.driver.entity.Driver;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +13,8 @@ public interface DriverRepository extends JpaRepository<Driver, Long>, JpaSpecif
     Optional<Driver> findByDocument(String document);
 
     List<Driver> findByCompany_IdAndIdNotIn(Long companyId, List<Long> excludedIds);
+
+    List<Driver> findByCompany_IdAndStatusAndIdNotIn(Long companyId, RecordStatus status, List<Long> excludedIds);
 
     List<Driver> findByCompany_Id(Long companyId);
 

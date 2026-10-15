@@ -13,6 +13,8 @@ public interface DeviceRepository extends JpaRepository<Device, Long>, JpaSpecif
 
     List<Device> findByCompany_IdAndIdNotIn(Long companyId, List<Long> excludedIds);
 
+    List<Device> findByCompany_IdAndStatusAndIdNotIn(Long companyId, RecordStatus status, List<Long> excludedIds);
+
     List<Device> findByCompany_Id(Long companyId);
 
     long countByCompany_Id(Long companyId);

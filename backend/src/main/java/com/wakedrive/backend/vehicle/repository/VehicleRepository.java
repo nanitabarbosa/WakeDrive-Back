@@ -1,5 +1,6 @@
 package com.wakedrive.backend.vehicle.repository;
 
+import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.vehicle.entity.Vehicle;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +13,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpec
     Optional<Vehicle> findByPlate(String plate);
 
     List<Vehicle> findByCompany_IdAndIdNotIn(Long companyId, List<Long> excludedIds);
+
+    List<Vehicle> findByCompany_IdAndStatusAndIdNotIn(Long companyId, RecordStatus status, List<Long> excludedIds);
 
     List<Vehicle> findByCompany_Id(Long companyId);
 

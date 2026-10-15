@@ -2,6 +2,7 @@ package com.wakedrive.backend.vinculation.service.impl;
 
 import com.wakedrive.backend.common.dto.FilterOptionDTO;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
+import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.common.exception.DuplicateResourceException;
 import com.wakedrive.backend.common.exception.ResourceNotFoundException;
 import com.wakedrive.backend.device.entity.Device;
@@ -100,7 +101,7 @@ public class VinculationServiceImpl implements VinculationService {
     public List<FilterOptionDTO> getAvailableDrivers() {
         Long companyId = currentUserProvider.getCurrentCompanyId();
         List<Long> linkedIds = linkedDriverIds(companyId);
-        return driverRepository.findByCompany_IdAndIdNotIn(companyId, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
+        return driverRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
                 .map(driver -> new FilterOptionDTO(driver.getId(), driver.getFullName()))
                 .toList();
     }
@@ -110,7 +111,7 @@ public class VinculationServiceImpl implements VinculationService {
     public List<FilterOptionDTO> getAvailableVehicles() {
         Long companyId = currentUserProvider.getCurrentCompanyId();
         List<Long> linkedIds = linkedVehicleIds(companyId);
-        return vehicleRepository.findByCompany_IdAndIdNotIn(companyId, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
+        return vehicleRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
                 .map(vehicle -> new FilterOptionDTO(vehicle.getId(), vehicle.getPlate()))
                 .toList();
     }
@@ -120,7 +121,7 @@ public class VinculationServiceImpl implements VinculationService {
     public List<FilterOptionDTO> getAvailableDevices() {
         Long companyId = currentUserProvider.getCurrentCompanyId();
         List<Long> linkedIds = linkedDeviceIds(companyId);
-        return deviceRepository.findByCompany_IdAndIdNotIn(companyId, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
+        return deviceRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
                 .map(device -> new FilterOptionDTO(device.getId(), device.getSerial()))
                 .toList();
     }
