@@ -1,0 +1,9 @@
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Archivos de ejecucion local ###
+run_*.log
+run_pid.txt
