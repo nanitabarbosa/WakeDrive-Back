@@ -1,5 +1,6 @@
 package com.wakedrive.backend.device.service.impl;
 
+import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.common.dto.FilterOptionDTO;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
 import com.wakedrive.backend.common.entity.RecordStatus;
@@ -54,13 +55,14 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Override
     public DeviceDTO create(DeviceRequestDTO request) {
-        if (deviceRepository.findBySerial(request.getSerial()).isPresent()) {
-            throw new DuplicateResourceException("Device already exists with serial: " + request.getSerial());
+        String serial = TextNormalizer.code(request.getSerial());
+        if (deviceRepository.findBySerial(serial).isPresent()) {
+            throw new DuplicateResourceException("Device already exists with serial: " + serial);
         }
         Company company = companyRepository.findById(currentUserProvider.getCurrentCompanyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
         Device device = new Device();
-        device.setSerial(request.getSerial());
+        device.setSerial(serial);
         device.setStatus(request.getStatus());
         device.setCompany(company);
         return toDTO(deviceRepository.save(device));
@@ -69,11 +71,12 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     public DeviceDTO update(Long id, DeviceRequestDTO request) {
         Device device = findEntity(id);
-        if (!device.getSerial().equals(request.getSerial())
-                && deviceRepository.findBySerial(request.getSerial()).isPresent()) {
-            throw new DuplicateResourceException("Device already exists with serial: " + request.getSerial());
+        String serial = TextNormalizer.code(request.getSerial());
+        if (!device.getSerial().equals(serial)
+                && deviceRepository.findBySerial(serial).isPresent()) {
+            throw new DuplicateResourceException("Device already exists with serial: " + serial);
         }
-        device.setSerial(request.getSerial());
+        device.setSerial(serial);
         device.setStatus(request.getStatus());
         return toDTO(deviceRepository.save(device));
     }

@@ -1,5 +1,6 @@
 package com.wakedrive.backend.vehicle.service.impl;
 
+import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.brand.dto.BrandDTO;
 import com.wakedrive.backend.brand.entity.Brand;
 import com.wakedrive.backend.brand.repository.BrandRepository;
@@ -70,8 +71,9 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleDTO create(VehicleRequestDTO request) {
-        if (vehicleRepository.findByPlate(request.getPlate()).isPresent()) {
-            throw new DuplicateResourceException("Vehicle already exists with plate: " + request.getPlate());
+        String plate = TextNormalizer.code(request.getPlate());
+        if (vehicleRepository.findByPlate(plate).isPresent()) {
+            throw new DuplicateResourceException("Vehicle already exists with plate: " + plate);
         }
         Company company = companyRepository.findById(currentUserProvider.getCurrentCompanyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
@@ -84,9 +86,10 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleDTO update(Long id, VehicleRequestDTO request) {
         Vehicle vehicle = findEntity(id);
-        if (!vehicle.getPlate().equals(request.getPlate())
-                && vehicleRepository.findByPlate(request.getPlate()).isPresent()) {
-            throw new DuplicateResourceException("Vehicle already exists with plate: " + request.getPlate());
+        String plate = TextNormalizer.code(request.getPlate());
+        if (!vehicle.getPlate().equals(plate)
+                && vehicleRepository.findByPlate(plate).isPresent()) {
+            throw new DuplicateResourceException("Vehicle already exists with plate: " + plate);
         }
         applyRequest(vehicle, request);
         return toDTO(vehicleRepository.save(vehicle));
@@ -111,7 +114,7 @@ public class VehicleServiceImpl implements VehicleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Brand not found: " + request.getBrandId()));
         VehicleType vehicleType = vehicleTypeRepository.findById(request.getVehicleTypeId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle type not found: " + request.getVehicleTypeId()));
-        vehicle.setPlate(request.getPlate());
+        vehicle.setPlate(TextNormalizer.code(request.getPlate()));
         vehicle.setBrand(brand);
         vehicle.setModel(request.getModel());
         vehicle.setYear(request.getYear());

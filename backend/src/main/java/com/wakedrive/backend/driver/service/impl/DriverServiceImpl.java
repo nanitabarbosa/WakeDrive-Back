@@ -1,5 +1,6 @@
 package com.wakedrive.backend.driver.service.impl;
 
+import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.common.dto.FilterOptionDTO;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
 import com.wakedrive.backend.common.entity.RecordStatus;
@@ -59,8 +60,9 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public DriverDTO create(DriverRequestDTO request) {
-        if (driverRepository.findByDocument(request.getDocument()).isPresent()) {
-            throw new DuplicateResourceException("Driver already exists with document: " + request.getDocument());
+        String document = TextNormalizer.code(request.getDocument());
+        if (driverRepository.findByDocument(document).isPresent()) {
+            throw new DuplicateResourceException("Driver already exists with document: " + document);
         }
         Company company = companyRepository.findById(currentUserProvider.getCurrentCompanyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
@@ -73,9 +75,10 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public DriverDTO update(Long id, DriverRequestDTO request) {
         Driver driver = findEntity(id);
-        if (!driver.getDocument().equals(request.getDocument())
-                && driverRepository.findByDocument(request.getDocument()).isPresent()) {
-            throw new DuplicateResourceException("Driver already exists with document: " + request.getDocument());
+        String document = TextNormalizer.code(request.getDocument());
+        if (!driver.getDocument().equals(document)
+                && driverRepository.findByDocument(document).isPresent()) {
+            throw new DuplicateResourceException("Driver already exists with document: " + document);
         }
         applyRequest(driver, request);
         return toDTO(driverRepository.save(driver));
@@ -97,8 +100,8 @@ public class DriverServiceImpl implements DriverService {
 
     private void applyRequest(Driver driver, DriverRequestDTO request) {
         driver.setFullName(request.getFullName());
-        driver.setDocument(request.getDocument());
-        driver.setEmail(request.getEmail());
+        driver.setDocument(TextNormalizer.code(request.getDocument()));
+        driver.setEmail(TextNormalizer.email(request.getEmail()));
         driver.setPhone(request.getPhone());
         driver.setStatus(request.getStatus());
     }

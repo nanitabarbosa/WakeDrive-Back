@@ -1,5 +1,6 @@
 package com.wakedrive.backend.settings.service.impl;
 
+import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.common.dto.StoredFileDTO;
 import com.wakedrive.backend.common.exception.DuplicateResourceException;
 import com.wakedrive.backend.common.service.FileStorageService;
@@ -38,7 +39,8 @@ public class SettingsServiceImpl implements SettingsService {
     public CompanySettingsDTO updateSettings(SettingsRequestDTO request, MultipartFile alarmSound, MultipartFile logo) {
         Company company = currentCompany();
 
-        if (companyRepository.existsByNormalizedNitAndIdNot(request.getNit().replace("-", ""), company.getId())) {
+        String nit = TextNormalizer.code(request.getNit());
+        if (companyRepository.existsByNormalizedNitAndIdNot(nit.replace("-", ""), company.getId())) {
             throw new DuplicateResourceException("A company already exists with nit: " + request.getNit());
         }
 
@@ -46,7 +48,7 @@ public class SettingsServiceImpl implements SettingsService {
         company.setNotifyDeviceShutdown(request.getNotifyDeviceShutdown());
         company.setAlarmDurationSeconds(request.getAlarmDurationSeconds());
         company.setName(request.getCompanyName());
-        company.setNit(request.getNit());
+        company.setNit(nit);
         company.setAddress(request.getAddress());
         company.setPhone(request.getPhone());
 

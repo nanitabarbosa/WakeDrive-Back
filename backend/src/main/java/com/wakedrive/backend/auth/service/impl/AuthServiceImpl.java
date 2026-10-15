@@ -1,5 +1,6 @@
 package com.wakedrive.backend.auth.service.impl;
 
+import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.auth.dto.AuthResponseDTO;
 import com.wakedrive.backend.auth.dto.ChangePasswordRequestDTO;
 import com.wakedrive.backend.auth.dto.ForgotPasswordRequestDTO;
@@ -54,19 +55,20 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponseDTO login(LoginRequestDTO request) {
-        if (loginAttemptService.isBlocked(request.getEmail())) {
+        String email = TextNormalizer.email(request.getEmail());
+        if (loginAttemptService.isBlocked(email)) {
             throw new TooManyAttemptsException("Too many failed login attempts. Try again in 15 minutes");
         }
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+                    new UsernamePasswordAuthenticationToken(email, request.getPassword()));
         } catch (AuthenticationException e) {
-            loginAttemptService.recordFailure(request.getEmail());
+            loginAttemptService.recordFailure(email);
             throw e;
         }
-        loginAttemptService.reset(request.getEmail());
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.getEmail()));
+        loginAttemptService.reset(email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + email));
 
         return buildAuthResponse(user);
     }
@@ -86,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void forgotPassword(ForgotPasswordRequestDTO request) {
-        userRepository.findByEmail(request.getEmail()).ifPresent(user -> {
+        userRepository.findByEmail(TextNormalizer.email(request.getEmail())).ifPresent(user -> {
             String token = UUID.randomUUID().toString();
             user.setResetToken(token);
             user.setResetTokenExpiry(LocalDateTime.now().plusHours(2));

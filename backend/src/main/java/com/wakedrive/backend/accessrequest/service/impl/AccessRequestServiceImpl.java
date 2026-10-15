@@ -1,5 +1,6 @@
 package com.wakedrive.backend.accessrequest.service.impl;
 
+import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.accessrequest.dto.AccessRequestCountsDTO;
 import com.wakedrive.backend.accessrequest.dto.AccessRequestCreateDTO;
 import com.wakedrive.backend.accessrequest.dto.AccessRequestDTO;
@@ -57,6 +58,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
         City city = cityRepository.findById(request.getCityId())
                 .orElseThrow(() -> new ResourceNotFoundException("City not found: " + request.getCityId()));
 
+        String adminEmail = TextNormalizer.email(request.getAdminEmail());
         String nit = normalizeNit(request.getNit());
         if (companyRepository.existsByNormalizedNit(nit)) {
             throw new DuplicateResourceException("A company already exists with nit: " + request.getNit());
@@ -65,21 +67,21 @@ public class AccessRequestServiceImpl implements AccessRequestService {
             throw new DuplicateResourceException("A pending access request already exists with nit: " + request.getNit());
         }
 
-        if (userRepository.existsByEmail(request.getAdminEmail())) {
-            throw new DuplicateResourceException("A user already exists with email: " + request.getAdminEmail());
+        if (userRepository.existsByEmail(adminEmail)) {
+            throw new DuplicateResourceException("A user already exists with email: " + adminEmail);
         }
-        if (accessRequestRepository.existsByAdminEmailIgnoreCaseAndStatus(request.getAdminEmail(), AccessRequestStatus.PENDING)) {
-            throw new DuplicateResourceException("A pending access request already exists with email: " + request.getAdminEmail());
+        if (accessRequestRepository.existsByAdminEmailIgnoreCaseAndStatus(adminEmail, AccessRequestStatus.PENDING)) {
+            throw new DuplicateResourceException("A pending access request already exists with email: " + adminEmail);
         }
 
         AccessRequest accessRequest = AccessRequest.builder()
                 .companyName(request.getCompanyName())
-                .nit(request.getNit())
+                .nit(TextNormalizer.code(request.getNit()))
                 .city(city)
                 .address(request.getAddress())
                 .companyPhone(request.getCompanyPhone())
                 .adminName(request.getAdminName())
-                .adminEmail(request.getAdminEmail())
+                .adminEmail(adminEmail)
                 .adminPhone(request.getAdminPhone())
                 .status(AccessRequestStatus.PENDING)
                 .build();
@@ -115,16 +117,16 @@ public class AccessRequestServiceImpl implements AccessRequestService {
             throw new DuplicateResourceException("A company already exists with nit: " + accessRequest.getNit());
         }
 
-        if (userRepository.existsByEmail(accessRequest.getAdminEmail())) {
+        if (userRepository.existsByEmail(TextNormalizer.email(accessRequest.getAdminEmail()))) {
             throw new DuplicateResourceException("A user already exists with email: " + accessRequest.getAdminEmail());
         }
 
         Company company = Company.builder()
-                .nit(accessRequest.getNit())
+                .nit(TextNormalizer.code(accessRequest.getNit()))
                 .name(accessRequest.getCompanyName())
                 .address(accessRequest.getAddress())
                 .phone(accessRequest.getCompanyPhone())
-                .email(accessRequest.getAdminEmail())
+                .email(TextNormalizer.email(accessRequest.getAdminEmail()))
                 .build();
         companyRepository.save(company);
 
@@ -134,7 +136,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
         String generatedPassword = generatePassword();
         User admin = User.builder()
                 .name(accessRequest.getAdminName())
-                .email(accessRequest.getAdminEmail())
+                .email(TextNormalizer.email(accessRequest.getAdminEmail()))
                 .password(passwordEncoder.encode(generatedPassword))
                 .role(adminRole)
                 .company(company)
@@ -162,7 +164,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
     }
 
     private String normalizeNit(String nit) {
-        return nit.replace("-", "").trim();
+        return TextNormalizer.code(nit).replace("-", "");
     }
 
     private AccessRequest findPendingEntity(Long id) {

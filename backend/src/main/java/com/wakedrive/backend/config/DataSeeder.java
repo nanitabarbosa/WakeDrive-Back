@@ -1,5 +1,6 @@
 package com.wakedrive.backend.config;
 
+import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.brand.entity.Brand;
 import com.wakedrive.backend.brand.repository.BrandRepository;
 import com.wakedrive.backend.city.entity.City;
@@ -45,13 +46,13 @@ public class DataSeeder implements CommandLineRunner {
         Role superAdminRole = ensureRole("SUPER_ADMIN");
         ensureRole("ADMIN");
 
-        if (userRepository.findByEmail(superAdminEmail).isEmpty()) {
+        if (userRepository.findByEmail(TextNormalizer.email(TextNormalizer.email(superAdminEmail))).isEmpty()) {
             if (superAdminPassword == null || superAdminPassword.isBlank()) {
                 throw new IllegalStateException("app.seed.super-admin-password must not be blank");
             }
             User superAdmin = User.builder()
                     .name("Super Admin")
-                    .email(superAdminEmail)
+                    .email(TextNormalizer.email(superAdminEmail))
                     .password(passwordEncoder.encode(superAdminPassword))
                     .role(superAdminRole)
                     .build();
