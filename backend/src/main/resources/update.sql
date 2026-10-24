@@ -1,10 +1,10 @@
 -- update.sql: todos los queries de la carpeta sql/ en un solo archivo, en el orden en que deben ejecutarse.
--- Complementa el esquema que crea Hibernate (ddl-auto=update): auditoría, trigger de negocio e índices.
+-- Complementa el esquema que crea Hibernate (ddl-auto=update): auditoría, triggers de negocio e índices.
 -- Requisito: las tablas del backend ya existen (arrancar el backend al menos una vez).
 -- Todos los queries son idempotentes: se puede ejecutar más de una vez sin error.
 --
--- Todo junto:   psql -U postgres -d wakedrive -1 -v ON_ERROR_STOP=1 -f update.sql
--- Por partes:   psql -U postgres -d wakedrive -v ON_ERROR_STOP=1 -f sql/01_ddl_audi_users.sql   (y así con los demás, en orden)
+-- Desde la carpeta backend, todo junto:   psql -U postgres -d wakedrive -1 -v ON_ERROR_STOP=1 -f src/main/resources/update.sql
+-- Por partes:                             psql -U postgres -d wakedrive -v ON_ERROR_STOP=1 -f src/main/resources/sql/01_ddl_audi_users.sql   (y así con los demás, en orden)
 
 -- ============================================================
 -- 01_ddl_audi_users.sql  (Tabla de auditoría de users)
@@ -140,3 +140,55 @@ CREATE TRIGGER trg_audi_vinculations AFTER INSERT OR UPDATE OR DELETE ON public.
 CREATE INDEX IF NOT EXISTS idx_alerts_detected_at ON public.alerts (detected_at);
 CREATE INDEX IF NOT EXISTS idx_alerts_driver ON public.alerts (driver_id);
 CREATE INDEX IF NOT EXISTS idx_alerts_vehicle ON public.alerts (vehicle_id);
+
+-- ============================================================
+-- 07_trg_validate_vinculation.sql  (Trigger de negocio: solo se vinculan conductor, vehículo y dispositivo ACTIVOS de la misma empresa)
+-- ============================================================
+-- Regla de negocio: solo se puede vincular un conductor, un vehiculo y un dispositivo que esten ACTIVOS
+-- y pertenezcan a la misma empresa.
+CREATE OR REPLACE FUNCTION public.fn_validate_vinculation() RETURNS trigger AS $$
+DECLARE
+    v_driver  RECORD;
+    v_vehicle RECORD;
+    v_device  RECORD;
+BEGIN
+    SELECT status, company_id INTO v_driver  FROM public.drivers  WHERE driver_id  = NEW.driver_id;
+    SELECT status, company_id INTO v_vehicle FROM public.vehicles WHERE vehicle_id = NEW.vehicle_id;
+    SELECT status, company_id INTO v_device  FROM public.devices  WHERE device_id  = NEW.device_id;
+
+    IF v_driver.status <> 'ACTIVE' THEN
+        RAISE EXCEPTION 'El conductor % no esta ACTIVO: no se puede vincular', NEW.driver_id USING ERRCODE = 'P0001';
+    END IF;
+    IF v_vehicle.status <> 'ACTIVE' THEN
+        RAISE EXCEPTION 'El vehiculo % no esta ACTIVO: no se puede vincular', NEW.vehicle_id USING ERRCODE = 'P0001';
+    END IF;
+    IF v_device.status <> 'ACTIVE' THEN
+        RAISE EXCEPTION 'El dispositivo % no esta ACTIVO: no se puede vincular', NEW.device_id USING ERRCODE = 'P0001';
+    END IF;
+    IF v_driver.company_id <> v_vehicle.company_id OR v_driver.company_id <> v_device.company_id THEN
+        RAISE EXCEPTION 'El conductor, el vehiculo y el dispositivo deben pertenecer a la misma empresa'
+            USING ERRCODE = 'P0001';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_validate_vinculation ON public.vinculations;
+CREATE TRIGGER trg_validate_vinculation BEFORE INSERT OR UPDATE OF driver_id, vehicle_id, device_id ON public.vinculations
+    FOR EACH ROW EXECUTE FUNCTION public.fn_validate_vinculation();
+
+-- ============================================================
+-- 08_trg_protect_alerts.sql  (Trigger de negocio: las alertas registradas no se modifican ni se eliminan)
+-- ============================================================
+-- Regla de negocio: las alertas registradas son un historial inmutable; no se pueden modificar ni eliminar.
+CREATE OR REPLACE FUNCTION public.fn_protect_alerts() RETURNS trigger AS $$
+BEGIN
+    RAISE EXCEPTION 'Las alertas registradas no se pueden %: el historial es inmutable',
+        CASE TG_OP WHEN 'UPDATE' THEN 'modificar' ELSE 'eliminar' END
+        USING ERRCODE = 'P0001';
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_protect_alerts ON public.alerts;
+CREATE TRIGGER trg_protect_alerts BEFORE UPDATE OR DELETE ON public.alerts
+    FOR EACH ROW EXECUTE FUNCTION public.fn_protect_alerts();
