@@ -8,7 +8,7 @@ Basado en el diagrama físico entregado. Se excluyen del modelo los campos marca
 - IDs: `UUID` autogenerado (`GenerationType.UUID`) en todas las tablas, excepto claves naturales ya definidas en el diagrama: `COMPANY.nit`, `email_template.name`, y la clave compuesta `role_permission (role_id, permission_id)`.
 - Cada entidad tiene su propio DTO de respuesta (`XxxDTO`) y, cuando el payload de creación/edición difiere, un `XxxRequestDTO`. La conversión Entity↔DTO vive en el Service.
 - Lombok se usa para reducir boilerplate (`@Getter/@Setter`, `@Builder`, constructores) en entidades y DTOs.
-- Persistencia de esquema: `spring.jpa.hibernate.ddl-auto=update` (no se introduce Flyway/Liquibase salvo que se pida).
+- Persistencia de esquema: `spring.jpa.hibernate.ddl-auto=none`; el esquema lo manejan los scripts SQL (ver `src/main/resources/update.sql`) y `create` se usa solo para recrear la base desde las entidades (no se introduce Flyway/Liquibase salvo que se pida).
 - `DEVICE_CONFIGURATION` es 1 a 1 con `DEVICE` (confirmado con el usuario): se agrega restricción única sobre `device_id`.
 - Cada fase termina con un reporte en `docs/0X-nombre.md` con lo creado, decisiones de diseño y supuestos.
 
