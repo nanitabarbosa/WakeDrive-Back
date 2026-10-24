@@ -21,6 +21,6 @@ public class City {
     @Column(name = "city_id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name", length = 50, nullable = false, unique = true)
     private String name;
 }

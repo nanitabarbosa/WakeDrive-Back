@@ -25,20 +25,20 @@ public class Driver {
     @Column(name = "driver_id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "full_name", nullable = false)
+    @Column(name = "full_name", length = 100, nullable = false)
     private String fullName;
 
-    @Column(name = "document", nullable = false, unique = true)
+    @Column(name = "document", length = 10, nullable = false, unique = true)
     private String document;
 
-    @Column(name = "email")
+    @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "phone")
+    @Column(name = "phone", length = 10)
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", length = 20, nullable = false)
     @Builder.Default
     private RecordStatus status = RecordStatus.ACTIVE;
 

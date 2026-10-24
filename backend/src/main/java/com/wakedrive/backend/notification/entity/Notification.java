@@ -29,13 +29,13 @@ public class Notification {
     private Company company;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
+    @Column(name = "type", length = 30, nullable = false)
     private NotificationType type;
 
-    @Column(name = "title", nullable = false)
+    @Column(name = "title", length = 100, nullable = false)
     private String title;
 
-    @Column(name = "message", nullable = false)
+    @Column(name = "message", length = 255, nullable = false)
     private String message;
 
     @Column(name = "read", nullable = false)

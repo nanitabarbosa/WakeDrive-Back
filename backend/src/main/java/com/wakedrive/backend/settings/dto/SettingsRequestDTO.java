@@ -30,7 +30,7 @@ public class SettingsRequestDTO {
     private Integer alarmDurationSeconds;
 
     @NotBlank(message = "Es obligatorio")
-    @Size(max = 255, message = "Máximo 255 caracteres")
+    @Size(max = 100, message = "Máximo 100 caracteres")
     private String companyName;
 
     @NotBlank(message = "Es obligatorio")
@@ -43,7 +43,7 @@ public class SettingsRequestDTO {
 
     @NotBlank(message = "Es obligatorio")
     @Email(message = "Ingresa un correo válido")
-    @Size(max = 255, message = "Máximo 255 caracteres")
+    @Size(max = 100, message = "Máximo 100 caracteres")
     private String email;
 
     private boolean removeAlarmSound;

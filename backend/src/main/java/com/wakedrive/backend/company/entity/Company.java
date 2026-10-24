@@ -21,19 +21,19 @@ public class Company {
     @Column(name = "company_id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "nit", length = 30, nullable = false, unique = true)
+    @Column(name = "nit", length = 12, nullable = false, unique = true)
     private String nit;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
     @Column(name = "address", length = 150, nullable = false)
     private String address;
 
-    @Column(name = "phone", length = 20, nullable = false)
+    @Column(name = "phone", length = 10, nullable = false)
     private String phone;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", length = 100, nullable = false)
     private String email;
 
     @Column(name = "face_recognition_always", nullable = false)

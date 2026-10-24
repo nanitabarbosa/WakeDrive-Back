@@ -27,14 +27,14 @@ public class Vehicle {
     @Column(name = "vehicle_id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "plate", length = 15, nullable = false, unique = true)
+    @Column(name = "plate", length = 6, nullable = false, unique = true)
     private String plate;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
 
-    @Column(name = "model", nullable = false)
+    @Column(name = "model", length = 50, nullable = false)
     private String model;
 
     @Column(name = "year", nullable = false)
@@ -45,7 +45,7 @@ public class Vehicle {
     private VehicleType type;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", length = 20, nullable = false)
     @Builder.Default
     private RecordStatus status = RecordStatus.ACTIVE;
 

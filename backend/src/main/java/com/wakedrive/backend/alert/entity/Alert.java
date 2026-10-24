@@ -41,7 +41,7 @@ public class Alert {
     @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
-    @Column(name = "location", nullable = false)
+    @Column(name = "location", length = 150, nullable = false)
     private String location;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -52,6 +52,6 @@ public class Alert {
     private Integer durationSeconds;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "level", nullable = false)
+    @Column(name = "level", length = 10, nullable = false)
     private AlertLevel level;
 }

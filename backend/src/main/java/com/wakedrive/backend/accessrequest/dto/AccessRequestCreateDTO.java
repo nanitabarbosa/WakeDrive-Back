@@ -17,11 +17,11 @@ import lombok.Setter;
 public class AccessRequestCreateDTO {
 
     @NotBlank(message = "Es obligatorio")
-    @Size(max = 255, message = "Máximo 255 caracteres")
+    @Size(max = 100, message = "Máximo 100 caracteres")
     private String companyName;
 
     @NotBlank(message = "Es obligatorio")
-    @Pattern(regexp = "^[\\d-]{5,15}$", message = "Debe tener entre 5 y 15 caracteres, solo dígitos y guiones")
+    @Pattern(regexp = "^\\d{9,10}-\\d$", message = "Debe tener el formato 900123456-1 (dígitos, guion y dígito de verificación)")
     private String nit;
 
     @NotNull(message = "Es obligatorio")
@@ -36,12 +36,12 @@ public class AccessRequestCreateDTO {
     private String companyPhone;
 
     @NotBlank(message = "Es obligatorio")
-    @Size(max = 255, message = "Máximo 255 caracteres")
+    @Size(max = 100, message = "Máximo 100 caracteres")
     private String adminName;
 
     @NotBlank(message = "Es obligatorio")
     @Email(message = "Ingresa un correo válido")
-    @Size(max = 255, message = "Máximo 255 caracteres")
+    @Size(max = 100, message = "Máximo 100 caracteres")
     private String adminEmail;
 
     @NotBlank(message = "Es obligatorio")

@@ -25,11 +25,11 @@ public class Device {
     @Column(name = "device_id", updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "serial", nullable = false, unique = true)
+    @Column(name = "serial", length = 50, nullable = false, unique = true)
     private String serial;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", length = 20, nullable = false)
     @Builder.Default
     private RecordStatus status = RecordStatus.ACTIVE;
 
