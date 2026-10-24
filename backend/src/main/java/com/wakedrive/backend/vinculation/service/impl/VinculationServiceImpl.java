@@ -17,12 +17,12 @@ import com.wakedrive.backend.vinculation.dto.VinculationRequestDTO;
 import com.wakedrive.backend.vinculation.entity.Vinculation;
 import com.wakedrive.backend.vinculation.repository.VinculationRepository;
 import com.wakedrive.backend.vinculation.service.VinculationService;
+import com.wakedrive.backend.common.util.PageRequests;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +56,7 @@ public class VinculationServiceImpl implements VinculationService {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        Page<Vinculation> result = vinculationRepository.findAll(spec, PageRequest.of(page, size));
+        Page<Vinculation> result = vinculationRepository.findAll(spec, PageRequests.of(page, size));
         return PageResponseDTO.of(result, this::toDTO);
     }
 

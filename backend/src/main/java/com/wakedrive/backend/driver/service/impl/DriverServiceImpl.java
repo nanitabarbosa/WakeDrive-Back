@@ -1,5 +1,6 @@
 package com.wakedrive.backend.driver.service.impl;
 
+import com.wakedrive.backend.common.util.PageRequests;
 import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.common.dto.FilterOptionDTO;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +54,7 @@ public class DriverServiceImpl implements DriverService {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        Page<Driver> result = driverRepository.findAll(spec, PageRequest.of(page, size));
+        Page<Driver> result = driverRepository.findAll(spec, PageRequests.of(page, size));
         return PageResponseDTO.of(result, this::toDTO);
     }
 

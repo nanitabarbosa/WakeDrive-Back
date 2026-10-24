@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(BEARER_PREFIX.length());
             if (jwtService.isTokenValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = loadUser(token);
-                if (userDetails != null) {
+                if (userDetails != null && hasActiveCompany(userDetails)) {
                     if (mustChangePassword(userDetails) && !request.getRequestURI().startsWith(AUTH_PATH_PREFIX)) {
                         rejectUntilPasswordChanged(response);
                         return;
@@ -58,6 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (UsernameNotFoundException e) {
             return null;
         }
+    }
+
+    /** Un token ya emitido deja de servir en cuanto se desactiva la empresa del usuario. */
+    private boolean hasActiveCompany(UserDetails userDetails) {
+        return !(userDetails instanceof CustomUserDetails details) || details.getUser().hasActiveCompany();
     }
 
     private boolean mustChangePassword(UserDetails userDetails) {

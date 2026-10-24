@@ -5,6 +5,7 @@ import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.company.dto.CompanyDTO;
 import com.wakedrive.backend.company.dto.CompanyDeviceCountsDTO;
 import com.wakedrive.backend.company.dto.CompanyDeviceDTO;
+import com.wakedrive.backend.company.dto.CompanyStatusRequestDTO;
 import com.wakedrive.backend.company.dto.CompanySummaryDTO;
 import java.util.List;
 
@@ -17,4 +18,6 @@ public interface CompanyService {
     PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Long companyId, String search, RecordStatus status, int page, int size);
 
     CompanyDeviceCountsDTO getCompanyDeviceCounts(Long companyId);
+
+    CompanySummaryDTO updateStatus(Long companyId, CompanyStatusRequestDTO request);
 }

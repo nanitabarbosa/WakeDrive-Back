@@ -1,5 +1,6 @@
 package com.wakedrive.backend.user.entity;
 
+import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.company.entity.Company;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -49,4 +50,9 @@ public class User {
     @Column(name = "must_change_password")
     @Builder.Default
     private Boolean mustChangePassword = false;
+
+    /** Una empresa inactiva bloquea a todos sus usuarios. El SUPER_ADMIN no pertenece a ninguna empresa. */
+    public boolean hasActiveCompany() {
+        return company == null || company.getStatus() == RecordStatus.ACTIVE;
+    }
 }

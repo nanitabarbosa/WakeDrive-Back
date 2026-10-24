@@ -1,5 +1,6 @@
 package com.wakedrive.backend.accessrequest.service.impl;
 
+import com.wakedrive.backend.common.util.PageRequests;
 import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.accessrequest.dto.AccessRequestCountsDTO;
 import com.wakedrive.backend.accessrequest.dto.AccessRequestCreateDTO;
@@ -25,7 +26,6 @@ import java.security.SecureRandom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,8 +92,8 @@ public class AccessRequestServiceImpl implements AccessRequestService {
     @Transactional(readOnly = true)
     public PageResponseDTO<AccessRequestDTO> getAll(AccessRequestStatus status, int page, int size) {
         Page<AccessRequest> result = status != null
-                ? accessRequestRepository.findByStatus(status, PageRequest.of(page, size))
-                : accessRequestRepository.findAll(PageRequest.of(page, size));
+                ? accessRequestRepository.findByStatus(status, PageRequests.of(page, size))
+                : accessRequestRepository.findAll(PageRequests.of(page, size));
         return PageResponseDTO.of(result, this::toDTO);
     }
 
@@ -127,6 +127,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
                 .address(accessRequest.getAddress())
                 .phone(accessRequest.getCompanyPhone())
                 .email(TextNormalizer.email(accessRequest.getAdminEmail()))
+                .city(accessRequest.getCity())
                 .build();
         companyRepository.save(company);
 

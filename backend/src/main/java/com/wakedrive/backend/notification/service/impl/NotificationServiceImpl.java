@@ -8,6 +8,7 @@ import com.wakedrive.backend.notification.entity.Notification;
 import com.wakedrive.backend.notification.repository.NotificationRepository;
 import com.wakedrive.backend.notification.service.NotificationService;
 import com.wakedrive.backend.security.CurrentUserProvider;
+import com.wakedrive.backend.common.util.PageRequests;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +28,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional(readOnly = true)
     public PageResponseDTO<NotificationDTO> getAll(Boolean unread, int page, int size) {
         Long companyId = currentUserProvider.getCurrentCompanyId();
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        PageRequest pageRequest = PageRequests.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Notification> result = Boolean.TRUE.equals(unread)
                 ? notificationRepository.findByCompany_IdAndRead(companyId, false, pageRequest)
                 : notificationRepository.findByCompany_Id(companyId, pageRequest);

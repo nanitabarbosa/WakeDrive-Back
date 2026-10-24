@@ -1,13 +1,60 @@
 -- update.sql: todos los queries de la carpeta sql/ en un solo archivo, en el orden en que deben ejecutarse.
--- Complementa el esquema que crea Hibernate (ddl-auto=update): auditoría, triggers de negocio e índices.
--- Requisito: las tablas del backend ya existen (arrancar el backend al menos una vez).
+-- Complementa el esquema de las entidades (ddl-auto=none: Hibernate ya no crea ni modifica tablas): columnas nuevas, auditoría, triggers de negocio e índices.
+-- Requisito: las tablas del backend ya existen. En una base vacía, arrancar el backend una vez con spring.jpa.hibernate.ddl-auto=create y luego correr este archivo.
 -- Todos los queries son idempotentes: se puede ejecutar más de una vez sin error.
 --
 -- Desde la carpeta backend, todo junto:   psql -U postgres -d wakedrive -1 -v ON_ERROR_STOP=1 -f src/main/resources/update.sql
--- Por partes:                             psql -U postgres -d wakedrive -v ON_ERROR_STOP=1 -f src/main/resources/sql/01_auditoria.sql   (y así con 02 y 03, en orden)
+-- Por partes:                             psql -U postgres -d wakedrive -v ON_ERROR_STOP=1 -f src/main/resources/sql/00_esquema.sql   (y así con 01, 02 y 03, en orden)
 
 -- ============================================================
--- 01_auditoria.sql  (Auditoría: tablas audi_users y audi_vinculations y sus triggers)
+-- 00_esquema.sql  (Esquema de empresas y solicitudes: estado y ciudad de la empresa y campos de auditoría (fechas y autor))
+-- ============================================================
+-- companies: estado (ACTIVE/INACTIVE) y ciudad. Las empresas existentes quedan ACTIVE.
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status VARCHAR(255) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS city_id BIGINT REFERENCES public.cities (city_id);
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'ck_companies_status') THEN
+        ALTER TABLE public.companies ADD CONSTRAINT ck_companies_status CHECK (status IN ('ACTIVE', 'INACTIVE'));
+    END IF;
+END
+$$;
+
+-- La ciudad de las empresas existentes se recupera de su solicitud de acceso aprobada (se cruza por NIT sin guion).
+-- Las empresas sin solicitud aprobada quedan con city_id nulo.
+UPDATE public.companies c
+SET city_id = ar.city_id
+FROM public.access_requests ar
+WHERE c.city_id IS NULL
+  AND ar.status = 'APPROVED'
+  AND replace(ar.nit, '-', '') = replace(c.nit, '-', '');
+
+-- companies: fechas y autor (correo del usuario que creó y que modificó por última vez).
+-- Las empresas existentes quedan con la fecha de esta migración y sin autor.
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS created_at TIMESTAMP(6) NOT NULL DEFAULT now();
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP(6) NOT NULL DEFAULT now();
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS created_by VARCHAR(100);
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS updated_by VARCHAR(100);
+
+-- access_requests: fecha y autor de la última modificación (quién aprobó o rechazó).
+-- La fecha de las solicitudes existentes se inicializa con su fecha de creación, solo la primera vez.
+ALTER TABLE public.access_requests ADD COLUMN IF NOT EXISTS updated_by VARCHAR(100);
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                   WHERE table_schema = 'public' AND table_name = 'access_requests' AND column_name = 'updated_at') THEN
+        ALTER TABLE public.access_requests ADD COLUMN updated_at TIMESTAMP(6);
+        UPDATE public.access_requests SET updated_at = created_at;
+        ALTER TABLE public.access_requests ALTER COLUMN updated_at SET NOT NULL;
+        ALTER TABLE public.access_requests ALTER COLUMN updated_at SET DEFAULT now();
+    END IF;
+END
+$$;
+
+-- ============================================================
+-- 01_auditoria.sql  (Auditoría: tablas audi_users, audi_vinculations, audi_companies y audi_access_requests y sus triggers)
 -- ============================================================
 -- Auditoría de public.users: guarda el estado de cada fila antes (OLD) y después (NEW) de un INSERT, UPDATE o DELETE.
 -- Se omiten password, reset_token y reset_token_expiry: nunca se guardan secretos en la auditoría.
@@ -100,6 +147,117 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_audi_vinculations ON public.vinculations;
 CREATE TRIGGER trg_audi_vinculations AFTER INSERT OR UPDATE OR DELETE ON public.vinculations
     FOR EACH ROW EXECUTE FUNCTION public.fn_audi_vinculations();
+
+-- Auditoría de public.companies: guarda el estado de cada fila antes (OLD) y después (NEW) de un INSERT, UPDATE o DELETE.
+-- changed_by es el correo del usuario que hizo el cambio: lo escribe la aplicación en companies.updated_by.
+-- En un DELETE, o si el cambio no viene de la aplicación (SQL directo), queda el usuario de la base de datos.
+CREATE TABLE IF NOT EXISTS public.audi_companies (
+    audit_id   BIGINT GENERATED BY DEFAULT AS IDENTITY,
+    operation  VARCHAR(10)  NOT NULL,
+    state      CHAR(3)      NOT NULL,
+    changed_by VARCHAR(100) NOT NULL DEFAULT current_user,
+    changed_at TIMESTAMP(6) NOT NULL DEFAULT now(),
+    company_id               BIGINT,
+    nit                      VARCHAR(12),
+    name                     VARCHAR(100),
+    address                  VARCHAR(150),
+    phone                    VARCHAR(10),
+    email                    VARCHAR(100),
+    city_id                  BIGINT,
+    status                   VARCHAR(255),
+    CONSTRAINT pk_audi_companies PRIMARY KEY (audit_id),
+    CONSTRAINT ck_audi_companies_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE')),
+    CONSTRAINT ck_audi_companies_state CHECK (state IN ('OLD', 'NEW'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_audi_companies_company_id ON public.audi_companies (company_id);
+CREATE INDEX IF NOT EXISTS idx_audi_companies_changed_at ON public.audi_companies (changed_at);
+
+-- Auditoría de public.access_requests: solo identifica la solicitud y su estado (aprobada, rechazada...).
+-- No guarda los datos personales del administrador.
+CREATE TABLE IF NOT EXISTS public.audi_access_requests (
+    audit_id   BIGINT GENERATED BY DEFAULT AS IDENTITY,
+    operation  VARCHAR(10)  NOT NULL,
+    state      CHAR(3)      NOT NULL,
+    changed_by VARCHAR(100) NOT NULL DEFAULT current_user,
+    changed_at TIMESTAMP(6) NOT NULL DEFAULT now(),
+    access_request_id        BIGINT,
+    company_name             VARCHAR(100),
+    nit                      VARCHAR(12),
+    status                   VARCHAR(20),
+    CONSTRAINT pk_audi_access_requests PRIMARY KEY (audit_id),
+    CONSTRAINT ck_audi_access_requests_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE')),
+    CONSTRAINT ck_audi_access_requests_state CHECK (state IN ('OLD', 'NEW'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_audi_access_requests_request_id ON public.audi_access_requests (access_request_id);
+CREATE INDEX IF NOT EXISTS idx_audi_access_requests_changed_at ON public.audi_access_requests (changed_at);
+
+-- Trigger de auditoría de public.companies (guarda en public.audi_companies).
+CREATE OR REPLACE FUNCTION public.fn_audi_companies() RETURNS trigger AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO public.audi_companies (operation, state, changed_by, company_id, nit, name, address, phone, email, city_id, status)
+        VALUES (TG_OP, 'NEW', COALESCE(NEW.updated_by, current_user), NEW.company_id, NEW.nit, NEW.name, NEW.address, NEW.phone, NEW.email, NEW.city_id, NEW.status);
+        RETURN NEW;
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO public.audi_companies (operation, state, changed_by, company_id, nit, name, address, phone, email, city_id, status)
+        VALUES (TG_OP, 'OLD', COALESCE(NEW.updated_by, current_user), OLD.company_id, OLD.nit, OLD.name, OLD.address, OLD.phone, OLD.email, OLD.city_id, OLD.status);
+        INSERT INTO public.audi_companies (operation, state, changed_by, company_id, nit, name, address, phone, email, city_id, status)
+        VALUES (TG_OP, 'NEW', COALESCE(NEW.updated_by, current_user), NEW.company_id, NEW.nit, NEW.name, NEW.address, NEW.phone, NEW.email, NEW.city_id, NEW.status);
+        RETURN NEW;
+    ELSE
+        INSERT INTO public.audi_companies (operation, state, changed_by, company_id, nit, name, address, phone, email, city_id, status)
+        VALUES (TG_OP, 'OLD', current_user, OLD.company_id, OLD.nit, OLD.name, OLD.address, OLD.phone, OLD.email, OLD.city_id, OLD.status);
+        RETURN OLD;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Los UPDATE solo se auditan si cambia algún dato auditado: guardar el logo o la alarma no genera filas.
+DROP TRIGGER IF EXISTS trg_audi_companies ON public.companies;
+CREATE TRIGGER trg_audi_companies AFTER INSERT OR DELETE ON public.companies
+    FOR EACH ROW EXECUTE FUNCTION public.fn_audi_companies();
+
+DROP TRIGGER IF EXISTS trg_audi_companies_update ON public.companies;
+CREATE TRIGGER trg_audi_companies_update AFTER UPDATE ON public.companies
+    FOR EACH ROW
+    WHEN (OLD.nit IS DISTINCT FROM NEW.nit OR OLD.name IS DISTINCT FROM NEW.name
+          OR OLD.address IS DISTINCT FROM NEW.address OR OLD.phone IS DISTINCT FROM NEW.phone
+          OR OLD.email IS DISTINCT FROM NEW.email OR OLD.city_id IS DISTINCT FROM NEW.city_id
+          OR OLD.status IS DISTINCT FROM NEW.status)
+    EXECUTE FUNCTION public.fn_audi_companies();
+
+-- Trigger de auditoría de public.access_requests (guarda en public.audi_access_requests).
+-- Una solicitud pública (INSERT) no trae autor: queda el usuario de la base de datos.
+CREATE OR REPLACE FUNCTION public.fn_audi_access_requests() RETURNS trigger AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO public.audi_access_requests (operation, state, changed_by, access_request_id, company_name, nit, status)
+        VALUES (TG_OP, 'NEW', COALESCE(NEW.updated_by, current_user), NEW.access_request_id, NEW.company_name, NEW.nit, NEW.status);
+        RETURN NEW;
+    ELSIF TG_OP = 'UPDATE' THEN
+        INSERT INTO public.audi_access_requests (operation, state, changed_by, access_request_id, company_name, nit, status)
+        VALUES (TG_OP, 'OLD', COALESCE(NEW.updated_by, current_user), OLD.access_request_id, OLD.company_name, OLD.nit, OLD.status);
+        INSERT INTO public.audi_access_requests (operation, state, changed_by, access_request_id, company_name, nit, status)
+        VALUES (TG_OP, 'NEW', COALESCE(NEW.updated_by, current_user), NEW.access_request_id, NEW.company_name, NEW.nit, NEW.status);
+        RETURN NEW;
+    ELSE
+        INSERT INTO public.audi_access_requests (operation, state, changed_by, access_request_id, company_name, nit, status)
+        VALUES (TG_OP, 'OLD', current_user, OLD.access_request_id, OLD.company_name, OLD.nit, OLD.status);
+        RETURN OLD;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_audi_access_requests ON public.access_requests;
+CREATE TRIGGER trg_audi_access_requests AFTER INSERT OR DELETE ON public.access_requests
+    FOR EACH ROW EXECUTE FUNCTION public.fn_audi_access_requests();
+
+DROP TRIGGER IF EXISTS trg_audi_access_requests_update ON public.access_requests;
+CREATE TRIGGER trg_audi_access_requests_update AFTER UPDATE ON public.access_requests
+    FOR EACH ROW WHEN (OLD.status IS DISTINCT FROM NEW.status)
+    EXECUTE FUNCTION public.fn_audi_access_requests();
 
 -- ============================================================
 -- 02_triggers_negocio.sql  (Triggers de negocio: validar alertas, validar vinculaciones y proteger alertas)

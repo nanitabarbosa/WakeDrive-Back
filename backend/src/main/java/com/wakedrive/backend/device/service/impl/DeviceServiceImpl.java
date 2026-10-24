@@ -1,5 +1,6 @@
 package com.wakedrive.backend.device.service.impl;
 
+import com.wakedrive.backend.common.util.PageRequests;
 import com.wakedrive.backend.common.util.TextNormalizer;
 import com.wakedrive.backend.common.dto.FilterOptionDTO;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +49,7 @@ public class DeviceServiceImpl implements DeviceService {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        Page<Device> result = deviceRepository.findAll(spec, PageRequest.of(page, size));
+        Page<Device> result = deviceRepository.findAll(spec, PageRequests.of(page, size));
         return PageResponseDTO.of(result, this::toDTO);
     }
 

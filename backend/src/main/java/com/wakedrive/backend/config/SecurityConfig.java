@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/access-requests").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/access-requests/**", "/api/companies/summary", "/api/companies/*/devices").hasRole("SUPER_ADMIN")
+                        .requestMatchers("/api/access-requests/**", "/api/companies/summary", "/api/companies/*/devices/**", "/api/companies/*/status").hasRole("SUPER_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/brands").hasRole("SUPER_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/brands/**").hasRole("SUPER_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/brands/**").hasRole("SUPER_ADMIN")

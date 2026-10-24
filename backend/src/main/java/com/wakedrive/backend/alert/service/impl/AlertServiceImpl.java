@@ -8,6 +8,7 @@ import com.wakedrive.backend.alert.service.AlertService;
 import com.wakedrive.backend.common.dto.PageResponseDTO;
 import com.wakedrive.backend.eventtype.dto.EventTypeDTO;
 import com.wakedrive.backend.security.CurrentUserProvider;
+import com.wakedrive.backend.common.util.PageRequests;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -61,7 +61,7 @@ public class AlertServiceImpl implements AlertService {
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        Page<Alert> result = alertRepository.findAll(spec, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "detectedAt")));
+        Page<Alert> result = alertRepository.findAll(spec, PageRequests.of(page, size, Sort.by(Sort.Direction.DESC, "detectedAt")));
         return PageResponseDTO.of(result, this::toDTO);
     }
 

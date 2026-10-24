@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -129,6 +130,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private AuthResponseDTO buildAuthResponse(User user) {
+        if (!user.hasActiveCompany()) {
+            throw new DisabledException("La empresa está inactiva");
+        }
         String roleName = user.getRole().getName();
 
         RefreshToken refreshToken = refreshTokenRepository.save(RefreshToken.builder()

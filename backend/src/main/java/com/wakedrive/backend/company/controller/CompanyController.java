@@ -5,8 +5,10 @@ import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.company.dto.CompanyDTO;
 import com.wakedrive.backend.company.dto.CompanyDeviceCountsDTO;
 import com.wakedrive.backend.company.dto.CompanyDeviceDTO;
+import com.wakedrive.backend.company.dto.CompanyStatusRequestDTO;
 import com.wakedrive.backend.company.dto.CompanySummaryDTO;
 import com.wakedrive.backend.company.service.CompanyService;
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +41,11 @@ public class CompanyController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return companyService.getCompanyDevices(companyId, search, status, page, size);
+    }
+
+    @PutMapping("/{companyId}/status")
+    public CompanySummaryDTO updateStatus(@PathVariable Long companyId, @Valid @RequestBody CompanyStatusRequestDTO request) {
+        return companyService.updateStatus(companyId, request);
     }
 
     @GetMapping("/{companyId}/devices/counts")

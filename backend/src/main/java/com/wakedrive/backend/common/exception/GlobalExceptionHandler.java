@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -134,6 +135,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     // ------------------------------------------------------------------ seguridad
+
+    /** Se lanza solo después de validar la contraseña, para no revelar a quien no la conoce que la empresa está inactiva. */
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ApiErrorDTO> handleDisabled(DisabledException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "COMPANY_INACTIVE",
+                "La empresa está inactiva. Comunícate con el administrador de WakeDrive", null, null, request.getRequestURI());
+    }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiErrorDTO> handleAuthentication(AuthenticationException ex, HttpServletRequest request) {
