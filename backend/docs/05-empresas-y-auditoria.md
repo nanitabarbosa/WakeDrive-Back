@@ -9,7 +9,7 @@
 - **Auditoría de empresas y solicitudes:**
   - `Company` gana `created_at`, `updated_at`, `created_by` y `updated_by`. `AccessRequest` gana `updated_at` y `updated_by`.
   - `JpaAuditingConfig` llena el autor con el correo del usuario autenticado.
-  - Tablas `audi_companies` y `audi_access_requests` con triggers, con el mismo patrón OLD/NEW de `audi_users`.
+  - Tabla `audi_companies` con triggers, con el mismo patrón OLD/NEW de `audi_users`.
 - **Resumen de empresas (`getSummary`):** ordenado por nombre y luego id, busca por nombre o NIT (con o sin guion), trae la ciudad con la página y cuenta los dispositivos en una sola consulta. La respuesta añade `nit`, `city` y `status`.
 - **Tope de página:** `PageRequests` limita `size` a 100 en todos los listados paginados.
 - **Limpieza:** se elimina `CompanyRequestDTO` (ningún código lo usaba y el controlador no crea ni edita empresas con él).
