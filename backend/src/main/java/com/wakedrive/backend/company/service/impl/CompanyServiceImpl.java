@@ -74,13 +74,13 @@ public class CompanyServiceImpl implements CompanyService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
         Page<Company> result = companyRepository.findAll(spec, PageRequests.of(page, size, SUMMARY_SORT));
-        Map<Long, Long> deviceCounts = countDevices(result.getContent());
+        Map<Integer, Long> deviceCounts = countDevices(result.getContent());
         return PageResponseDTO.of(result, company -> toSummary(company, deviceCounts.getOrDefault(company.getId(), 0L)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Long companyId, String search, RecordStatus status, int page, int size) {
+    public PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Integer companyId, String search, RecordStatus status, int page, int size) {
         if (!companyRepository.existsById(companyId)) {
             throw new ResourceNotFoundException("Empresa no encontrada");
         }
@@ -105,7 +105,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     @Transactional(readOnly = true)
-    public CompanyDeviceCountsDTO getCompanyDeviceCounts(Long companyId) {
+    public CompanyDeviceCountsDTO getCompanyDeviceCounts(Integer companyId) {
         if (!companyRepository.existsById(companyId)) {
             throw new ResourceNotFoundException("Empresa no encontrada");
         }
@@ -115,7 +115,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public CompanySummaryDTO updateStatus(Long companyId, CompanyStatusRequestDTO request) {
+    public CompanySummaryDTO updateStatus(Integer companyId, CompanyStatusRequestDTO request) {
         Company company = companyRepository.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Empresa no encontrada"));
         company.setStatus(request.getStatus());
@@ -124,11 +124,11 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     /** Dispositivos por empresa para toda la página en una sola consulta, en vez de una consulta por empresa. */
-    private Map<Long, Long> countDevices(List<Company> companies) {
+    private Map<Integer, Long> countDevices(List<Company> companies) {
         if (companies.isEmpty()) {
             return Map.of();
         }
-        List<Long> companyIds = companies.stream().map(Company::getId).toList();
+        List<Integer> companyIds = companies.stream().map(Company::getId).toList();
         return deviceRepository.countByCompanyIds(companyIds).stream()
                 .collect(Collectors.toMap(CompanyDeviceTotal::getCompanyId, CompanyDeviceTotal::getTotal));
     }

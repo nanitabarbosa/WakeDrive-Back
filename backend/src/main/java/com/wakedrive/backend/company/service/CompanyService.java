@@ -15,9 +15,9 @@ public interface CompanyService {
 
     PageResponseDTO<CompanySummaryDTO> getSummary(String search, int page, int size);
 
-    PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Long companyId, String search, RecordStatus status, int page, int size);
+    PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(Integer companyId, String search, RecordStatus status, int page, int size);
 
-    CompanyDeviceCountsDTO getCompanyDeviceCounts(Long companyId);
+    CompanyDeviceCountsDTO getCompanyDeviceCounts(Integer companyId);
 
-    CompanySummaryDTO updateStatus(Long companyId, CompanyStatusRequestDTO request);
+    CompanySummaryDTO updateStatus(Integer companyId, CompanyStatusRequestDTO request);
 }

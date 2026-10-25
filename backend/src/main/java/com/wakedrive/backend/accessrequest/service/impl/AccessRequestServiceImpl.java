@@ -110,7 +110,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
     }
 
     @Override
-    public void approve(Long id) {
+    public void approve(Integer id) {
         AccessRequest accessRequest = findPendingEntity(id);
 
         if (companyRepository.existsByNormalizedNit(normalizeNit(accessRequest.getNit()))) {
@@ -152,7 +152,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
     }
 
     @Override
-    public void reject(Long id) {
+    public void reject(Integer id) {
         AccessRequest accessRequest = findPendingEntity(id);
         accessRequest.setStatus(AccessRequestStatus.REJECTED);
         accessRequestRepository.save(accessRequest);
@@ -168,7 +168,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
         return TextNormalizer.code(nit).replace("-", "");
     }
 
-    private AccessRequest findPendingEntity(Long id) {
+    private AccessRequest findPendingEntity(Integer id) {
         AccessRequest accessRequest = findEntity(id);
         if (accessRequest.getStatus() != AccessRequestStatus.PENDING) {
             throw new InvalidStateException("La solicitud de acceso ya no está pendiente");
@@ -184,7 +184,7 @@ public class AccessRequestServiceImpl implements AccessRequestService {
         return sb.toString();
     }
 
-    private AccessRequest findEntity(Long id) {
+    private AccessRequest findEntity(Integer id) {
         return accessRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Solicitud de acceso no encontrada"));
     }

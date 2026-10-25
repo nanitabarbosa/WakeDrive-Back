@@ -12,7 +12,7 @@ public interface VinculationService {
 
     VinculationDTO create(VinculationRequestDTO request);
 
-    void delete(Long id);
+    void delete(Integer id);
 
     List<FilterOptionDTO> getAvailableDrivers();
 

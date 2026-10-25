@@ -29,12 +29,12 @@ public class BrandController {
     }
 
     @PutMapping("/{id}")
-    public BrandDTO update(@PathVariable Long id, @Valid @RequestBody BrandRequestDTO request) {
+    public BrandDTO update(@PathVariable Integer id, @Valid @RequestBody BrandRequestDTO request) {
         return brandService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         brandService.delete(id);
         return ResponseEntity.noContent().build();
     }

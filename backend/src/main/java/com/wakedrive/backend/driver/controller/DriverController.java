@@ -41,12 +41,12 @@ public class DriverController {
     }
 
     @PutMapping("/{id}")
-    public DriverDTO update(@PathVariable Long id, @Valid @RequestBody DriverRequestDTO request) {
+    public DriverDTO update(@PathVariable Integer id, @Valid @RequestBody DriverRequestDTO request) {
         return driverService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         driverService.delete(id);
         return ResponseEntity.noContent().build();
     }

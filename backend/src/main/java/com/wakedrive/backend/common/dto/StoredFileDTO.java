@@ -14,6 +14,6 @@ import lombok.Setter;
 public class StoredFileDTO {
 
     private String name;
-    private long size;
+    private int size;
     private String url;
 }

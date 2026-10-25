@@ -15,7 +15,7 @@ public interface DashboardService {
 
     List<DeviceSummaryDTO> getDevices(String search, RecordStatus status, LocalDate from, LocalDate to, int limit);
 
-    List<AlertSummaryDTO> getAlerts(String search, Long eventTypeId, LocalDate from, LocalDate to, int limit);
+    List<AlertSummaryDTO> getAlerts(String search, Integer eventTypeId, LocalDate from, LocalDate to, int limit);
 
     List<DailyAlertsDTO> getAlertsByDay(LocalDate from, LocalDate to, int days);
 

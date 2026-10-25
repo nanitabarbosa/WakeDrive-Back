@@ -20,7 +20,7 @@ public class CurrentUserProvider {
         return "SUPER_ADMIN".equalsIgnoreCase(getCurrentUser().getRole().getName());
     }
 
-    public Long getCurrentCompanyId() {
+    public Integer getCurrentCompanyId() {
         User user = getCurrentUser();
         if (user.getCompany() == null) {
             throw new ResourceNotFoundException("Tu usuario no tiene una empresa asignada");

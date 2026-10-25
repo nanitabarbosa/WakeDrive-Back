@@ -43,7 +43,7 @@ public class DashboardController {
     @GetMapping("/alerts")
     public List<AlertSummaryDTO> getAlerts(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long eventTypeId,
+            @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(defaultValue = "5") int limit) {

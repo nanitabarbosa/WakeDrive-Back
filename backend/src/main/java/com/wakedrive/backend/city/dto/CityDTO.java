@@ -13,6 +13,6 @@ import lombok.Setter;
 @Builder
 public class CityDTO {
 
-    private Long id;
+    private Integer id;
     private String name;
 }

@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface AccessRequestRepository extends JpaRepository<AccessRequest, Long> {
+public interface AccessRequestRepository extends JpaRepository<AccessRequest, Integer> {
 
     Page<AccessRequest> findByStatus(AccessRequestStatus status, Pageable pageable);
 

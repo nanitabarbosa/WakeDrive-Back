@@ -11,6 +11,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class FilterOptionDTO {
 
-    private Long id;
+    private Integer id;
     private String label;
 }

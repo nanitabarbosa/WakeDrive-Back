@@ -13,9 +13,9 @@ public interface DriverService {
 
     DriverDTO create(DriverRequestDTO request);
 
-    DriverDTO update(Long id, DriverRequestDTO request);
+    DriverDTO update(Integer id, DriverRequestDTO request);
 
-    void delete(Long id);
+    void delete(Integer id);
 
     List<FilterOptionDTO> getOptions();
 }

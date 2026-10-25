@@ -44,8 +44,8 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponseDTO<VehicleDTO> getAll(String search, Long vehicleTypeId, RecordStatus status, int page, int size) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+    public PageResponseDTO<VehicleDTO> getAll(String search, Integer vehicleTypeId, RecordStatus status, int page, int size) {
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Vehicle> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("company").get("id"), companyId));
@@ -84,7 +84,7 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public VehicleDTO update(Long id, VehicleRequestDTO request) {
+    public VehicleDTO update(Integer id, VehicleRequestDTO request) {
         Vehicle vehicle = findEntity(id);
         String plate = TextNormalizer.code(request.getPlate());
         if (!vehicle.getPlate().equals(plate)
@@ -96,14 +96,14 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Integer id) {
         vehicleRepository.delete(findEntity(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<FilterOptionDTO> getOptions() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         return vehicleRepository.findByCompany_Id(companyId).stream()
                 .map(vehicle -> new FilterOptionDTO(vehicle.getId(), vehicle.getPlate()))
                 .toList();
@@ -122,7 +122,7 @@ public class VehicleServiceImpl implements VehicleService {
         vehicle.setStatus(request.getStatus());
     }
 
-    private Vehicle findEntity(Long id) {
+    private Vehicle findEntity(Integer id) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vehículo no encontrado"));
         if (!vehicle.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {

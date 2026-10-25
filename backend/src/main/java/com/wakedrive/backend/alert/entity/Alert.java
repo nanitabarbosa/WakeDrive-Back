@@ -24,7 +24,7 @@ public class Alert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "alert_id", updatable = false, nullable = false)
-    private Long id;
+    private Integer id;
 
     @Column(name = "detected_at", nullable = false)
     private LocalDateTime detectedAt;

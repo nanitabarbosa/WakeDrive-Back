@@ -19,7 +19,7 @@ public class City {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "city_id", updatable = false, nullable = false)
-    private Long id;
+    private Integer id;
 
     @Column(name = "name", length = 50, nullable = false, unique = true)
     private String name;

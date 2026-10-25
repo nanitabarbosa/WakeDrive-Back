@@ -8,17 +8,17 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface DriverRepository extends JpaRepository<Driver, Long>, JpaSpecificationExecutor<Driver> {
+public interface DriverRepository extends JpaRepository<Driver, Integer>, JpaSpecificationExecutor<Driver> {
 
     Optional<Driver> findByDocument(String document);
 
-    List<Driver> findByCompany_IdAndIdNotIn(Long companyId, List<Long> excludedIds);
+    List<Driver> findByCompany_IdAndIdNotIn(Integer companyId, List<Integer> excludedIds);
 
-    List<Driver> findByCompany_IdAndStatusAndIdNotIn(Long companyId, RecordStatus status, List<Long> excludedIds);
+    List<Driver> findByCompany_IdAndStatusAndIdNotIn(Integer companyId, RecordStatus status, List<Integer> excludedIds);
 
-    List<Driver> findByCompany_Id(Long companyId);
+    List<Driver> findByCompany_Id(Integer companyId);
 
-    long countByCompany_Id(Long companyId);
+    long countByCompany_Id(Integer companyId);
 
-    long countByCompany_IdAndCreatedAtBetween(Long companyId, LocalDateTime from, LocalDateTime to);
+    long countByCompany_IdAndCreatedAtBetween(Integer companyId, LocalDateTime from, LocalDateTime to);
 }

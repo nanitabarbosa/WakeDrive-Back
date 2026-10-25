@@ -48,7 +48,7 @@ public class FileStorageServiceImpl implements FileStorageService {
 
             return StoredFileDTO.builder()
                     .name(file.getOriginalFilename())
-                    .size(file.getSize())
+                    .size(Math.toIntExact(file.getSize()))
                     .url(baseUrl + "/" + subFolder + "/" + storedName)
                     .build();
         } catch (IOException e) {

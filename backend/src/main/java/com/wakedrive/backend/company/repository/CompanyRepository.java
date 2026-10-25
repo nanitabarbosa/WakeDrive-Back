@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface CompanyRepository extends JpaRepository<Company, Long>, JpaSpecificationExecutor<Company> {
+public interface CompanyRepository extends JpaRepository<Company, Integer>, JpaSpecificationExecutor<Company> {
 
     /** Trae la ciudad junto con la página: sin esto, mostrar la ciudad de cada empresa haría una consulta por empresa. */
     @Override

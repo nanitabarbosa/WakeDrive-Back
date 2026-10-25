@@ -14,7 +14,7 @@ public interface AccessRequestService {
 
     AccessRequestCountsDTO getCounts();
 
-    void approve(Long id);
+    void approve(Integer id);
 
-    void reject(Long id);
+    void reject(Integer id);
 }

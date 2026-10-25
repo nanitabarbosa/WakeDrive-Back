@@ -27,7 +27,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional(readOnly = true)
     public PageResponseDTO<NotificationDTO> getAll(Boolean unread, int page, int size) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         PageRequest pageRequest = PageRequests.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Notification> result = Boolean.TRUE.equals(unread)
                 ? notificationRepository.findByCompany_IdAndRead(companyId, false, pageRequest)
@@ -38,7 +38,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional(readOnly = true)
     public NotificationCountsDTO getCounts() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         return NotificationCountsDTO.builder()
                 .total(notificationRepository.countByCompany_Id(companyId))
                 .unread(notificationRepository.countByCompany_IdAndReadFalse(companyId))
@@ -46,7 +46,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void markAsRead(Long id) {
+    public void markAsRead(Integer id) {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Notificación no encontrada"));
         if (!notification.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {
@@ -58,7 +58,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void markAllAsRead() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         notificationRepository.findByCompany_IdAndReadFalse(companyId)
                 .forEach(notification -> notification.setRead(true));
     }

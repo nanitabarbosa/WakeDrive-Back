@@ -35,7 +35,7 @@ public class CompanyController {
 
     @GetMapping("/{companyId}/devices")
     public PageResponseDTO<CompanyDeviceDTO> getCompanyDevices(
-            @PathVariable Long companyId,
+            @PathVariable Integer companyId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) RecordStatus status,
             @RequestParam(defaultValue = "0") int page,
@@ -44,12 +44,12 @@ public class CompanyController {
     }
 
     @PutMapping("/{companyId}/status")
-    public CompanySummaryDTO updateStatus(@PathVariable Long companyId, @Valid @RequestBody CompanyStatusRequestDTO request) {
+    public CompanySummaryDTO updateStatus(@PathVariable Integer companyId, @Valid @RequestBody CompanyStatusRequestDTO request) {
         return companyService.updateStatus(companyId, request);
     }
 
     @GetMapping("/{companyId}/devices/counts")
-    public CompanyDeviceCountsDTO getCompanyDeviceCounts(@PathVariable Long companyId) {
+    public CompanyDeviceCountsDTO getCompanyDeviceCounts(@PathVariable Integer companyId) {
         return companyService.getCompanyDeviceCounts(companyId);
     }
 }

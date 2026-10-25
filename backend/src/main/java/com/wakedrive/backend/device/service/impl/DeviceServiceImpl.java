@@ -37,7 +37,7 @@ public class DeviceServiceImpl implements DeviceService {
     @Override
     @Transactional(readOnly = true)
     public PageResponseDTO<DeviceDTO> getAll(String search, RecordStatus status, int page, int size) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Device> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("company").get("id"), companyId));
@@ -69,7 +69,7 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public DeviceDTO update(Long id, DeviceRequestDTO request) {
+    public DeviceDTO update(Integer id, DeviceRequestDTO request) {
         Device device = findEntity(id);
         String serial = TextNormalizer.code(request.getSerial());
         if (!device.getSerial().equals(serial)
@@ -82,20 +82,20 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Integer id) {
         deviceRepository.delete(findEntity(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<FilterOptionDTO> getOptions() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         return deviceRepository.findByCompany_Id(companyId).stream()
                 .map(device -> new FilterOptionDTO(device.getId(), device.getSerial()))
                 .toList();
     }
 
-    private Device findEntity(Long id) {
+    private Device findEntity(Integer id) {
         Device device = deviceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Dispositivo no encontrado"));
         if (!device.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {

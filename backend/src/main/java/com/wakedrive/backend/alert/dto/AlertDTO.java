@@ -16,11 +16,11 @@ import lombok.Setter;
 @Builder
 public class AlertDTO {
 
-    private Long id;
+    private Integer id;
     private LocalDateTime date;
-    private Long userId;
+    private Integer userId;
     private String userName;
-    private Long vehicleId;
+    private Integer vehicleId;
     private String vehiclePlate;
     private String deviceSerial;
     private String location;

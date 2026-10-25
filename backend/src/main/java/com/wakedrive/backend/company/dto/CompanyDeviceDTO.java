@@ -14,7 +14,7 @@ import lombok.Setter;
 @Builder
 public class CompanyDeviceDTO {
 
-    private Long id;
+    private Integer id;
     private String serial;
     private RecordStatus status;
 }

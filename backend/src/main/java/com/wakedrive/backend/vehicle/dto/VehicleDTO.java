@@ -16,7 +16,7 @@ import lombok.Setter;
 @Builder
 public class VehicleDTO {
 
-    private Long id;
+    private Integer id;
     private String plate;
     private BrandDTO brand;
     private String model;

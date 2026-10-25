@@ -23,7 +23,7 @@ public class VehicleController {
     @GetMapping
     public PageResponseDTO<VehicleDTO> getAll(
             @RequestParam(required = false) String search,
-            @RequestParam(required = false) Long vehicleTypeId,
+            @RequestParam(required = false) Integer vehicleTypeId,
             @RequestParam(required = false) RecordStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
@@ -42,12 +42,12 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}")
-    public VehicleDTO update(@PathVariable Long id, @Valid @RequestBody VehicleRequestDTO request) {
+    public VehicleDTO update(@PathVariable Integer id, @Valid @RequestBody VehicleRequestDTO request) {
         return vehicleService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         vehicleService.delete(id);
         return ResponseEntity.noContent().build();
     }

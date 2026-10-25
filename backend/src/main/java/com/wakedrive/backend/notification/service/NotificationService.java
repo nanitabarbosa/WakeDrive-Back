@@ -10,7 +10,7 @@ public interface NotificationService {
 
     NotificationCountsDTO getCounts();
 
-    void markAsRead(Long id);
+    void markAsRead(Integer id);
 
     void markAllAsRead();
 }

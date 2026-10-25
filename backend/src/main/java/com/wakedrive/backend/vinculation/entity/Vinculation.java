@@ -24,7 +24,7 @@ public class Vinculation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vinculation_id", updatable = false, nullable = false)
-    private Long id;
+    private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "driver_id", nullable = false, unique = true)

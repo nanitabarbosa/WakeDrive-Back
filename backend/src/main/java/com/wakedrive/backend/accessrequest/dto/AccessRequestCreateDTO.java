@@ -25,7 +25,7 @@ public class AccessRequestCreateDTO {
     private String nit;
 
     @NotNull(message = "Es obligatorio")
-    private Long cityId;
+    private Integer cityId;
 
     @NotBlank(message = "Es obligatorio")
     @Size(max = 150, message = "Máximo 150 caracteres")

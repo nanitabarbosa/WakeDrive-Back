@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface VinculationRepository extends JpaRepository<Vinculation, Long>, JpaSpecificationExecutor<Vinculation> {
+public interface VinculationRepository extends JpaRepository<Vinculation, Integer>, JpaSpecificationExecutor<Vinculation> {
 
     Optional<Vinculation> findByDevice_Serial(String serial);
 }

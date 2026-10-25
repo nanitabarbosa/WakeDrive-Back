@@ -10,7 +10,7 @@ public interface BrandService {
 
     BrandDTO create(BrandRequestDTO request);
 
-    BrandDTO update(Long id, BrandRequestDTO request);
+    BrandDTO update(Integer id, BrandRequestDTO request);
 
-    void delete(Long id);
+    void delete(Integer id);
 }

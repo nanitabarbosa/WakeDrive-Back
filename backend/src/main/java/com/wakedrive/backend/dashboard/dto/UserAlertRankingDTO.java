@@ -13,7 +13,7 @@ import lombok.Setter;
 @Builder
 public class UserAlertRankingDTO {
 
-    private Long userId;
+    private Integer userId;
     private String name;
     private long total;
 }

@@ -32,9 +32,9 @@ public class AlertServiceImpl implements AlertService {
     private final CurrentUserProvider currentUserProvider;
 
     @Override
-    public PageResponseDTO<AlertDTO> getAll(LocalDate from, LocalDate to, Long userId, Long vehicleId,
-                                             Long eventTypeId, AlertLevel level, String location, int page, int size) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+    public PageResponseDTO<AlertDTO> getAll(LocalDate from, LocalDate to, Integer userId, Integer vehicleId,
+                                             Integer eventTypeId, AlertLevel level, String location, int page, int size) {
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Alert> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("driver").get("company").get("id"), companyId));

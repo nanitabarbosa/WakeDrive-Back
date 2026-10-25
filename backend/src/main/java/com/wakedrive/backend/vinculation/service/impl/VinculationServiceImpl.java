@@ -42,7 +42,7 @@ public class VinculationServiceImpl implements VinculationService {
     @Override
     @Transactional(readOnly = true)
     public PageResponseDTO<VinculationDTO> getAll(String search, int page, int size) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Vinculation> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("driver").get("company").get("id"), companyId));
@@ -62,7 +62,7 @@ public class VinculationServiceImpl implements VinculationService {
 
     @Override
     public VinculationDTO create(VinculationRequestDTO request) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
 
         Driver driver = driverRepository.findById(request.getUserId())
                 .filter(d -> d.getCompany().getId().equals(companyId))
@@ -87,7 +87,7 @@ public class VinculationServiceImpl implements VinculationService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Integer id) {
         Vinculation vinculation = vinculationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Vinculación no encontrada"));
         if (!vinculation.getDriver().getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {
@@ -99,9 +99,9 @@ public class VinculationServiceImpl implements VinculationService {
     @Override
     @Transactional(readOnly = true)
     public List<FilterOptionDTO> getAvailableDrivers() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
-        List<Long> linkedIds = linkedDriverIds(companyId);
-        return driverRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
+        List<Integer> linkedIds = linkedDriverIds(companyId);
+        return driverRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1) : linkedIds).stream()
                 .map(driver -> new FilterOptionDTO(driver.getId(), driver.getFullName()))
                 .toList();
     }
@@ -109,9 +109,9 @@ public class VinculationServiceImpl implements VinculationService {
     @Override
     @Transactional(readOnly = true)
     public List<FilterOptionDTO> getAvailableVehicles() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
-        List<Long> linkedIds = linkedVehicleIds(companyId);
-        return vehicleRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
+        List<Integer> linkedIds = linkedVehicleIds(companyId);
+        return vehicleRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1) : linkedIds).stream()
                 .map(vehicle -> new FilterOptionDTO(vehicle.getId(), vehicle.getPlate()))
                 .toList();
     }
@@ -119,26 +119,26 @@ public class VinculationServiceImpl implements VinculationService {
     @Override
     @Transactional(readOnly = true)
     public List<FilterOptionDTO> getAvailableDevices() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
-        List<Long> linkedIds = linkedDeviceIds(companyId);
-        return deviceRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1L) : linkedIds).stream()
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
+        List<Integer> linkedIds = linkedDeviceIds(companyId);
+        return deviceRepository.findByCompany_IdAndStatusAndIdNotIn(companyId, RecordStatus.ACTIVE, linkedIds.isEmpty() ? List.of(-1) : linkedIds).stream()
                 .map(device -> new FilterOptionDTO(device.getId(), device.getSerial()))
                 .toList();
     }
 
-    private List<Long> linkedDriverIds(Long companyId) {
+    private List<Integer> linkedDriverIds(Integer companyId) {
         return companyVinculations(companyId).stream().map(v -> v.getDriver().getId()).toList();
     }
 
-    private List<Long> linkedVehicleIds(Long companyId) {
+    private List<Integer> linkedVehicleIds(Integer companyId) {
         return companyVinculations(companyId).stream().map(v -> v.getVehicle().getId()).toList();
     }
 
-    private List<Long> linkedDeviceIds(Long companyId) {
+    private List<Integer> linkedDeviceIds(Integer companyId) {
         return companyVinculations(companyId).stream().map(v -> v.getDevice().getId()).toList();
     }
 
-    private List<Vinculation> companyVinculations(Long companyId) {
+    private List<Vinculation> companyVinculations(Integer companyId) {
         Specification<Vinculation> spec = (root, query, cb) ->
                 cb.equal(root.get("driver").get("company").get("id"), companyId);
         return vinculationRepository.findAll(spec);

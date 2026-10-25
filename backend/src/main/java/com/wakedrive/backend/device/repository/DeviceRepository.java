@@ -10,29 +10,29 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface DeviceRepository extends JpaRepository<Device, Long>, JpaSpecificationExecutor<Device> {
+public interface DeviceRepository extends JpaRepository<Device, Integer>, JpaSpecificationExecutor<Device> {
 
     Optional<Device> findBySerial(String serial);
 
-    List<Device> findByCompany_IdAndIdNotIn(Long companyId, List<Long> excludedIds);
+    List<Device> findByCompany_IdAndIdNotIn(Integer companyId, List<Integer> excludedIds);
 
-    List<Device> findByCompany_IdAndStatusAndIdNotIn(Long companyId, RecordStatus status, List<Long> excludedIds);
+    List<Device> findByCompany_IdAndStatusAndIdNotIn(Integer companyId, RecordStatus status, List<Integer> excludedIds);
 
-    List<Device> findByCompany_Id(Long companyId);
+    List<Device> findByCompany_Id(Integer companyId);
 
-    long countByCompany_Id(Long companyId);
+    long countByCompany_Id(Integer companyId);
 
     /** Total de dispositivos de varias empresas en una sola consulta (las empresas sin dispositivos no aparecen). */
     @Query("select d.company.id as companyId, count(d) as total from Device d "
             + "where d.company.id in :companyIds group by d.company.id")
-    List<CompanyDeviceTotal> countByCompanyIds(@Param("companyIds") Collection<Long> companyIds);
+    List<CompanyDeviceTotal> countByCompanyIds(@Param("companyIds") Collection<Integer> companyIds);
 
     interface CompanyDeviceTotal {
 
-        Long getCompanyId();
+        Integer getCompanyId();
 
         long getTotal();
     }
 
-    long countByCompany_IdAndStatus(Long companyId, RecordStatus status);
+    long countByCompany_IdAndStatus(Integer companyId, RecordStatus status);
 }

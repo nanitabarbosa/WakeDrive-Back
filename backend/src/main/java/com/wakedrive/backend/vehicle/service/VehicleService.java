@@ -9,13 +9,13 @@ import java.util.List;
 
 public interface VehicleService {
 
-    PageResponseDTO<VehicleDTO> getAll(String search, Long vehicleTypeId, RecordStatus status, int page, int size);
+    PageResponseDTO<VehicleDTO> getAll(String search, Integer vehicleTypeId, RecordStatus status, int page, int size);
 
     VehicleDTO create(VehicleRequestDTO request);
 
-    VehicleDTO update(Long id, VehicleRequestDTO request);
+    VehicleDTO update(Integer id, VehicleRequestDTO request);
 
-    void delete(Long id);
+    void delete(Integer id);
 
     List<FilterOptionDTO> getOptions();
 }

@@ -28,7 +28,7 @@ public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "company_id", updatable = false, nullable = false)
-    private Long id;
+    private Integer id;
 
     @Column(name = "nit", length = 12, nullable = false, unique = true)
     private String nit;
@@ -74,7 +74,7 @@ public class Company {
     private String alarmSoundName;
 
     @Column(name = "alarm_sound_size")
-    private Long alarmSoundSize;
+    private Integer alarmSoundSize;
 
     @Column(name = "logo_path")
     private String logoPath;
@@ -83,7 +83,7 @@ public class Company {
     private String logoName;
 
     @Column(name = "logo_size")
-    private Long logoSize;
+    private Integer logoSize;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

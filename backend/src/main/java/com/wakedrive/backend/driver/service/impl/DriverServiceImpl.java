@@ -37,7 +37,7 @@ public class DriverServiceImpl implements DriverService {
     @Override
     @Transactional(readOnly = true)
     public PageResponseDTO<DriverDTO> getAll(String search, RecordStatus status, int page, int size) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Driver> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("company").get("id"), companyId));
@@ -73,7 +73,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public DriverDTO update(Long id, DriverRequestDTO request) {
+    public DriverDTO update(Integer id, DriverRequestDTO request) {
         Driver driver = findEntity(id);
         String document = TextNormalizer.code(request.getDocument());
         if (!driver.getDocument().equals(document)
@@ -85,14 +85,14 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(Integer id) {
         driverRepository.delete(findEntity(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<FilterOptionDTO> getOptions() {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         return driverRepository.findByCompany_Id(companyId).stream()
                 .map(driver -> new FilterOptionDTO(driver.getId(), driver.getFullName()))
                 .toList();
@@ -106,7 +106,7 @@ public class DriverServiceImpl implements DriverService {
         driver.setStatus(request.getStatus());
     }
 
-    private Driver findEntity(Long id) {
+    private Driver findEntity(Integer id) {
         Driver driver = driverRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Conductor no encontrado"));
         if (!driver.getCompany().getId().equals(currentUserProvider.getCurrentCompanyId())) {

@@ -40,7 +40,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional
-    public BrandDTO update(Long id, BrandRequestDTO request) {
+    public BrandDTO update(Integer id, BrandRequestDTO request) {
         Brand brand = findEntity(id);
         brandRepository.findByName(request.getName())
                 .filter(existing -> !existing.getId().equals(id))
@@ -53,11 +53,11 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     @Transactional
-    public void delete(Long id) {
+    public void delete(Integer id) {
         brandRepository.delete(findEntity(id));
     }
 
-    private Brand findEntity(Long id) {
+    private Brand findEntity(Integer id) {
         return brandRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Marca no encontrada"));
     }

@@ -8,17 +8,17 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface VehicleRepository extends JpaRepository<Vehicle, Long>, JpaSpecificationExecutor<Vehicle> {
+public interface VehicleRepository extends JpaRepository<Vehicle, Integer>, JpaSpecificationExecutor<Vehicle> {
 
     Optional<Vehicle> findByPlate(String plate);
 
-    List<Vehicle> findByCompany_IdAndIdNotIn(Long companyId, List<Long> excludedIds);
+    List<Vehicle> findByCompany_IdAndIdNotIn(Integer companyId, List<Integer> excludedIds);
 
-    List<Vehicle> findByCompany_IdAndStatusAndIdNotIn(Long companyId, RecordStatus status, List<Long> excludedIds);
+    List<Vehicle> findByCompany_IdAndStatusAndIdNotIn(Integer companyId, RecordStatus status, List<Integer> excludedIds);
 
-    List<Vehicle> findByCompany_Id(Long companyId);
+    List<Vehicle> findByCompany_Id(Integer companyId);
 
-    long countByCompany_Id(Long companyId);
+    long countByCompany_Id(Integer companyId);
 
-    long countByCompany_IdAndCreatedAtBetween(Long companyId, LocalDateTime from, LocalDateTime to);
+    long countByCompany_IdAndCreatedAtBetween(Integer companyId, LocalDateTime from, LocalDateTime to);
 }

@@ -23,7 +23,7 @@ public class Device {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "device_id", updatable = false, nullable = false)
-    private Long id;
+    private Integer id;
 
     @Column(name = "serial", length = 50, nullable = false, unique = true)
     private String serial;

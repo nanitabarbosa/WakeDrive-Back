@@ -14,7 +14,7 @@ import lombok.Setter;
 @Builder
 public class CompanySummaryDTO {
 
-    private Long id;
+    private Integer id;
     private String name;
     private String nit;
     private String city;

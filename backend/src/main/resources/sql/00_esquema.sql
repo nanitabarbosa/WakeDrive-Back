@@ -1,9 +1,31 @@
 -- Esquema de empresas y solicitudes: estado y ciudad de la empresa y campos de auditoría (fechas y autor)
 -- Idempotente: se puede ejecutar más de una vez sin error. Debe correr ANTES de 01_auditoria.sql (sus triggers leen updated_by).
 
+-- ids y tamaños de archivo: INTEGER (antes BIGINT). Convierte las tablas que ya existan; si ya son INTEGER no hace nada.
+-- Un trigger que nombra una columna (UPDATE OF / WHEN) impide cambiarle el tipo: se quitan y 01_auditoria.sql y 02_triggers_negocio.sql los vuelven a crear.
+DROP TRIGGER IF EXISTS trg_audi_companies_update ON public.companies;
+DROP TRIGGER IF EXISTS trg_validate_vinculation ON public.vinculations;
+
+DO $$
+DECLARE
+    t RECORD;
+BEGIN
+    FOR t IN
+        SELECT c.table_name,
+               string_agg(format('ALTER COLUMN %I TYPE INTEGER', c.column_name), ', ' ORDER BY c.ordinal_position) AS cambios
+        FROM information_schema.columns c
+        JOIN pg_tables p ON p.schemaname = c.table_schema AND p.tablename = c.table_name
+        WHERE c.table_schema = 'public' AND c.data_type = 'bigint'
+        GROUP BY c.table_name
+    LOOP
+        EXECUTE format('ALTER TABLE public.%I %s', t.table_name, t.cambios);
+    END LOOP;
+END
+$$;
+
 -- companies: estado (ACTIVE/INACTIVE) y ciudad. Las empresas existentes quedan ACTIVE.
 ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status VARCHAR(255) NOT NULL DEFAULT 'ACTIVE';
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS city_id BIGINT REFERENCES public.cities (city_id);
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS city_id INTEGER REFERENCES public.cities (city_id);
 
 DO $$
 BEGIN

@@ -14,7 +14,7 @@ import lombok.Setter;
 @Builder
 public class DriverDTO {
 
-    private Long id;
+    private Integer id;
     private String fullName;
     private String document;
     private String email;

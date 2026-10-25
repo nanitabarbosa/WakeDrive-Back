@@ -13,9 +13,9 @@ public interface DeviceService {
 
     DeviceDTO create(DeviceRequestDTO request);
 
-    DeviceDTO update(Long id, DeviceRequestDTO request);
+    DeviceDTO update(Integer id, DeviceRequestDTO request);
 
-    void delete(Long id);
+    void delete(Integer id);
 
     List<FilterOptionDTO> getOptions();
 }

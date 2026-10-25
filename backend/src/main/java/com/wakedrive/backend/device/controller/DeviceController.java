@@ -41,12 +41,12 @@ public class DeviceController {
     }
 
     @PutMapping("/{id}")
-    public DeviceDTO update(@PathVariable Long id, @Valid @RequestBody DeviceRequestDTO request) {
+    public DeviceDTO update(@PathVariable Integer id, @Valid @RequestBody DeviceRequestDTO request) {
         return deviceService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
         deviceService.delete(id);
         return ResponseEntity.noContent().build();
     }

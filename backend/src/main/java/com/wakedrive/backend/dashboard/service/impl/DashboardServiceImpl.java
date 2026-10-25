@@ -51,7 +51,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public DashboardStatsDTO getStats(LocalDate from, LocalDate to) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         LocalDate rangeFrom = resolveFrom(from, to, 7);
         LocalDate rangeTo = resolveTo(to);
         long days = ChronoUnit.DAYS.between(rangeFrom, rangeTo) + 1;
@@ -86,7 +86,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<DeviceSummaryDTO> getDevices(String search, RecordStatus status, LocalDate from, LocalDate to, int limit) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         validateRange(from, to);
         Specification<Device> spec = devicesInRange(companyId, search, status,
                 from != null ? from.atStartOfDay() : null,
@@ -98,8 +98,8 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List<AlertSummaryDTO> getAlerts(String search, Long eventTypeId, LocalDate from, LocalDate to, int limit) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+    public List<AlertSummaryDTO> getAlerts(String search, Integer eventTypeId, LocalDate from, LocalDate to, int limit) {
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         validateRange(from, to);
         Specification<Alert> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -131,7 +131,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<DailyAlertsDTO> getAlertsByDay(LocalDate fromParam, LocalDate toParam, int daysParam) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         LocalDate from = resolveFrom(fromParam, toParam, daysParam);
         LocalDate to = resolveTo(toParam);
         long days = ChronoUnit.DAYS.between(from, to) + 1;
@@ -149,7 +149,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     public List<UserAlertRankingDTO> getTopUsers(LocalDate fromParam, LocalDate toParam, int days, int limit) {
-        Long companyId = currentUserProvider.getCurrentCompanyId();
+        Integer companyId = currentUserProvider.getCurrentCompanyId();
         LocalDate from = resolveFrom(fromParam, toParam, days);
         LocalDate to = resolveTo(toParam);
         List<Alert> alerts = companyAlerts(companyId, from.atStartOfDay(), LocalDateTime.of(to, LocalTime.MAX));
@@ -193,7 +193,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     /** Dispositivos de la empresa con última conexión dentro del rango (los límites nulos no filtran). */
-    private Specification<Device> devicesInRange(Long companyId, String search, RecordStatus status,
+    private Specification<Device> devicesInRange(Integer companyId, String search, RecordStatus status,
                                                  LocalDateTime from, LocalDateTime to) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -214,11 +214,11 @@ public class DashboardServiceImpl implements DashboardService {
         };
     }
 
-    private long countAlerts(Long companyId, LocalDateTime from, LocalDateTime to) {
+    private long countAlerts(Integer companyId, LocalDateTime from, LocalDateTime to) {
         return companyAlerts(companyId, from, to).size();
     }
 
-    private List<Alert> companyAlerts(Long companyId, LocalDateTime from, LocalDateTime to) {
+    private List<Alert> companyAlerts(Integer companyId, LocalDateTime from, LocalDateTime to) {
         Specification<Alert> spec = (root, query, cb) -> cb.and(
                 cb.equal(root.get("driver").get("company").get("id"), companyId),
                 cb.greaterThanOrEqualTo(root.get("detectedAt"), from),

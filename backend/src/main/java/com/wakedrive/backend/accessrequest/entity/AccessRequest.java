@@ -26,7 +26,7 @@ public class AccessRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "access_request_id", updatable = false, nullable = false)
-    private Long id;
+    private Integer id;
 
     @Column(name = "company_name", length = 100, nullable = false)
     private String companyName;

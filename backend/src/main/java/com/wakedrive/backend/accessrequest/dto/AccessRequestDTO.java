@@ -15,7 +15,7 @@ import lombok.Setter;
 @Builder
 public class AccessRequestDTO {
 
-    private Long id;
+    private Integer id;
     private String companyName;
     private String nit;
     private String country;

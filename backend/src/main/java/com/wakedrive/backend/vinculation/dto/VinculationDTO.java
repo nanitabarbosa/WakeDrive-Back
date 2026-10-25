@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
 @Builder
 public class VinculationDTO {
 
-    private Long id;
-    private Long userId;
+    private Integer id;
+    private Integer userId;
     private String userName;
-    private Long vehicleId;
+    private Integer vehicleId;
     private String vehiclePlate;
     private String deviceSerial;
     private LocalDateTime linkedAt;

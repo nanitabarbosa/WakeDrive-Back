@@ -21,7 +21,7 @@ public class VehicleRequestDTO {
     private String plate;
 
     @NotNull(message = "Es obligatorio")
-    private Long brandId;
+    private Integer brandId;
 
     @NotBlank(message = "Es obligatorio")
     @Size(max = 50, message = "Máximo 50 caracteres")
@@ -31,7 +31,7 @@ public class VehicleRequestDTO {
     private Integer year;
 
     @NotNull(message = "Es obligatorio")
-    private Long vehicleTypeId;
+    private Integer vehicleTypeId;
 
     @NotNull(message = "Es obligatorio")
     private RecordStatus status;

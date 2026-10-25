@@ -38,12 +38,12 @@ public class AccessRequestController {
     }
 
     @PatchMapping("/{id}/approve")
-    public void approve(@PathVariable Long id) {
+    public void approve(@PathVariable Integer id) {
         accessRequestService.approve(id);
     }
 
     @PatchMapping("/{id}/reject")
-    public void reject(@PathVariable Long id) {
+    public void reject(@PathVariable Integer id) {
         accessRequestService.reject(id);
     }
 }

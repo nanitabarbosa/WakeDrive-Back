@@ -16,7 +16,7 @@ import lombok.Setter;
 @Builder
 public class AlertSummaryDTO {
 
-    private Long id;
+    private Integer id;
     private LocalDateTime date;
     private String user;
     private String vehiclePlate;
