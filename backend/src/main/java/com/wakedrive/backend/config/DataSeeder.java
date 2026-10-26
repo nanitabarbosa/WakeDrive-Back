@@ -61,8 +61,8 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         List<String> cities = List.of(
-                "Bogotá", "Medellín", "Cali", "Barranquilla", "Cartagena",
-                "Bucaramanga", "Pereira", "Santa Marta", "Manizales", "Cúcuta"
+                "Cúcuta", "Ocaña", "Pamplona", "Villa del Rosario", "Los Patios",
+                "El Zulia", "Tibú", "Convención", "Ábrego", "Sardinata"
         );
         seedMissing(cities, cityRepository.findAll().stream().map(City::getName).collect(Collectors.toSet()),
                 name -> cityRepository.save(City.builder().name(name).build()));
