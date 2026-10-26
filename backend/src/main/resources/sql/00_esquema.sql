@@ -1,10 +1,13 @@
--- Esquema de empresas y solicitudes: estado y ciudad de la empresa y campos de auditoría (fechas y autor)
--- Idempotente: se puede ejecutar más de una vez sin error. Debe correr ANTES de 01_auditoria.sql (sus triggers leen updated_by).
+-- Esquema de empresas y solicitudes: estado y ciudad de la empresa y fecha y autor de la última modificación de las solicitudes
+-- Idempotente: se puede ejecutar más de una vez sin error. Debe correr ANTES de 01_auditoria.sql.
 
 -- ids y tamaños de archivo: INTEGER (antes BIGINT). Convierte las tablas que ya existan; si ya son INTEGER no hace nada.
 -- Un trigger que nombra una columna (UPDATE OF / WHEN) impide cambiarle el tipo: se quitan y 01_auditoria.sql y 02_triggers_negocio.sql los vuelven a crear.
 DROP TRIGGER IF EXISTS trg_audi_companies_update ON public.companies;
 DROP TRIGGER IF EXISTS trg_validate_vinculation ON public.vinculations;
+
+-- companies ya no guarda fechas ni autor (created_at, updated_at, created_by y updated_by): se eliminan de las bases que todavía los tengan.
+ALTER TABLE public.companies DROP COLUMN IF EXISTS created_at, DROP COLUMN IF EXISTS updated_at, DROP COLUMN IF EXISTS created_by, DROP COLUMN IF EXISTS updated_by;
 
 DO $$
 DECLARE
@@ -43,13 +46,6 @@ FROM public.access_requests ar
 WHERE c.city_id IS NULL
   AND ar.status = 'APPROVED'
   AND replace(ar.nit, '-', '') = replace(c.nit, '-', '');
-
--- companies: fechas y autor (correo del usuario que creó y que modificó por última vez).
--- Las empresas existentes quedan con la fecha de esta migración y sin autor.
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS created_at TIMESTAMP(6) NOT NULL DEFAULT now();
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP(6) NOT NULL DEFAULT now();
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS created_by VARCHAR(100);
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS updated_by VARCHAR(100);
 
 -- access_requests: fecha y autor de la última modificación (quién aprobó o rechazó).
 -- La fecha de las solicitudes existentes se inicializa con su fecha de creación, solo la primera vez.

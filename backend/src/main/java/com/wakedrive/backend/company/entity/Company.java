@@ -3,21 +3,14 @@ package com.wakedrive.backend.company.entity;
 import com.wakedrive.backend.city.entity.City;
 import com.wakedrive.backend.common.entity.RecordStatus;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "companies")
-@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -84,20 +77,4 @@ public class Company {
 
     @Column(name = "logo_size")
     private Integer logoSize;
-
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @CreatedBy
-    @Column(name = "created_by", length = 100, updatable = false)
-    private String createdBy;
-
-    @LastModifiedBy
-    @Column(name = "updated_by", length = 100)
-    private String updatedBy;
 }
