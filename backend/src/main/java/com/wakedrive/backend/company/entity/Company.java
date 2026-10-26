@@ -38,13 +38,13 @@ public class Company {
     @Column(name = "email", length = 100, nullable = false)
     private String email;
 
-    // Nullable: las empresas anteriores a este campo se rellenan desde su solicitud de acceso (ver sql/00_esquema.sql).
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id")
+    // Toda empresa nace de una solicitud de acceso aprobada, y esa solicitud siempre trae ciudad.
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "city_id", nullable = false)
     private City city;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", length = 20, nullable = false)
     @Builder.Default
     private RecordStatus status = RecordStatus.ACTIVE;
 

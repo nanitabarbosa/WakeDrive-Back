@@ -48,7 +48,9 @@ END
 $$;
 
 -- companies: estado (ACTIVE/INACTIVE) y ciudad. Las empresas existentes quedan ACTIVE.
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status VARCHAR(255) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+-- En las bases que ya tenían la columna con 255 caracteres, se ajusta a 20 (como el estado de los demás registros).
+ALTER TABLE public.companies ALTER COLUMN status TYPE VARCHAR(20);
 ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS city_id INTEGER REFERENCES public.cities (city_id);
 
 DO $$
@@ -67,6 +69,17 @@ FROM public.access_requests ar
 WHERE c.city_id IS NULL
   AND ar.status = 'APPROVED'
   AND replace(ar.nit, '-', '') = replace(c.nit, '-', '');
+
+-- companies.city_id es obligatorio. Solo se marca NOT NULL si ninguna empresa quedó sin ciudad.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM public.companies WHERE city_id IS NULL) THEN
+        RAISE NOTICE 'companies.city_id sigue opcional: hay empresas sin ciudad; completarlas y volver a ejecutar este script';
+    ELSE
+        ALTER TABLE public.companies ALTER COLUMN city_id SET NOT NULL;
+    END IF;
+END
+$$;
 
 -- ============================================================
 -- 01_auditoria.sql  (Auditoría: tablas audi_users, audi_vinculations y audi_companies y sus triggers)
@@ -178,11 +191,14 @@ CREATE TABLE IF NOT EXISTS public.audi_companies (
     phone                    VARCHAR(10),
     email                    VARCHAR(100),
     city_id                  INTEGER,
-    status                   VARCHAR(255),
+    status                   VARCHAR(20),
     CONSTRAINT pk_audi_companies PRIMARY KEY (audit_id),
     CONSTRAINT ck_audi_companies_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE')),
     CONSTRAINT ck_audi_companies_state CHECK (state IN ('OLD', 'NEW'))
 );
+
+-- En las bases que ya tenían audi_companies con status de 255 caracteres, se ajusta a 20.
+ALTER TABLE public.audi_companies ALTER COLUMN status TYPE VARCHAR(20);
 
 CREATE INDEX IF NOT EXISTS idx_audi_companies_company_id ON public.audi_companies (company_id);
 CREATE INDEX IF NOT EXISTS idx_audi_companies_changed_at ON public.audi_companies (changed_at);

@@ -108,11 +108,14 @@ CREATE TABLE IF NOT EXISTS public.audi_companies (
     phone                    VARCHAR(10),
     email                    VARCHAR(100),
     city_id                  INTEGER,
-    status                   VARCHAR(255),
+    status                   VARCHAR(20),
     CONSTRAINT pk_audi_companies PRIMARY KEY (audit_id),
     CONSTRAINT ck_audi_companies_operation CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE')),
     CONSTRAINT ck_audi_companies_state CHECK (state IN ('OLD', 'NEW'))
 );
+
+-- En las bases que ya tenían audi_companies con status de 255 caracteres, se ajusta a 20.
+ALTER TABLE public.audi_companies ALTER COLUMN status TYPE VARCHAR(20);
 
 CREATE INDEX IF NOT EXISTS idx_audi_companies_company_id ON public.audi_companies (company_id);
 CREATE INDEX IF NOT EXISTS idx_audi_companies_changed_at ON public.audi_companies (changed_at);

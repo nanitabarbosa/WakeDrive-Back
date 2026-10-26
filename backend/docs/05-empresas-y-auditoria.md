@@ -23,7 +23,7 @@
 ## Supuestos y pendientes
 
 - **Aplicar a una base existente:** correr `update.sql` antes de arrancar el backend. Sin las columnas nuevas, la app falla al leer `companies`.
-- `companies.city_id` queda nullable. Se rellena desde la solicitud aprobada con el mismo NIT. Revisar con `SELECT * FROM companies WHERE city_id IS NULL`; si no queda ninguna, se puede volver `NOT NULL`.
+- `companies.city_id` es obligatorio (`NOT NULL`). En bases existentes se rellena desde la solicitud aprobada con el mismo NIT y el script solo la marca `NOT NULL` si ninguna empresa queda sin ciudad.
 - Cambios visibles para el frontend:
   - Campos nuevos en `/api/companies/summary`.
   - Endpoint nuevo de estado.

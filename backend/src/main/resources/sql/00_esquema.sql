@@ -40,7 +40,9 @@ END
 $$;
 
 -- companies: estado (ACTIVE/INACTIVE) y ciudad. Las empresas existentes quedan ACTIVE.
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status VARCHAR(255) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE';
+-- En las bases que ya tenían la columna con 255 caracteres, se ajusta a 20 (como el estado de los demás registros).
+ALTER TABLE public.companies ALTER COLUMN status TYPE VARCHAR(20);
 ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS city_id INTEGER REFERENCES public.cities (city_id);
 
 DO $$
@@ -59,4 +61,15 @@ FROM public.access_requests ar
 WHERE c.city_id IS NULL
   AND ar.status = 'APPROVED'
   AND replace(ar.nit, '-', '') = replace(c.nit, '-', '');
+
+-- companies.city_id es obligatorio. Solo se marca NOT NULL si ninguna empresa quedó sin ciudad.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM public.companies WHERE city_id IS NULL) THEN
+        RAISE NOTICE 'companies.city_id sigue opcional: hay empresas sin ciudad; completarlas y volver a ejecutar este script';
+    ELSE
+        ALTER TABLE public.companies ALTER COLUMN city_id SET NOT NULL;
+    END IF;
+END
+$$;
 
