@@ -7,7 +7,7 @@
 - **Activar o desactivar empresas:** `PUT /api/companies/{id}/status` con `{"status": "ACTIVE|INACTIVE"}`, solo SUPER_ADMIN. Devuelve el `CompanySummaryDTO` actualizado.
 - **Empresa inactiva:** sus usuarios no pueden iniciar sesión ni renovar la sesión (403 `COMPANY_INACTIVE`) y sus tokens vigentes dejan de servir. El SUPER_ADMIN no se ve afectado.
 - **Auditoría de empresas y solicitudes:**
-  - `AccessRequest` gana `updated_at` y `updated_by`; `JpaAuditingConfig` llena `updated_by` con el correo del usuario autenticado. `Company` no guarda fechas ni autor.
+  - `Company` y `AccessRequest` no guardan fechas ni autor de la última modificación: siempre actúa el SUPER_ADMIN y la auditoría de `companies` ya registra cuándo cambia cada empresa.
   - Tabla `audi_companies` con triggers, con el mismo patrón OLD/NEW de `audi_users`.
 - **Resumen de empresas (`getSummary`):** ordenado por nombre y luego id, busca por nombre o NIT (con o sin guion), trae la ciudad con la página y cuenta los dispositivos en una sola consulta. La respuesta añade `nit`, `city` y `status`.
 - **Tope de página:** `PageRequests` limita `size` a 100 en todos los listados paginados.

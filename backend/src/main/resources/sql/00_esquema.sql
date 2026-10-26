@@ -1,4 +1,4 @@
--- Esquema de empresas y solicitudes: estado y ciudad de la empresa y fecha y autor de la última modificación de las solicitudes
+-- Esquema de empresas y solicitudes: estado y ciudad de la empresa
 -- Idempotente: se puede ejecutar más de una vez sin error. Debe correr ANTES de 01_auditoria.sql.
 
 -- ids y tamaños de archivo: INTEGER (antes BIGINT). Convierte las tablas que ya existan; si ya son INTEGER no hace nada.
@@ -8,6 +8,8 @@ DROP TRIGGER IF EXISTS trg_validate_vinculation ON public.vinculations;
 
 -- companies ya no guarda fechas ni autor (created_at, updated_at, created_by y updated_by): se eliminan de las bases que todavía los tengan.
 ALTER TABLE public.companies DROP COLUMN IF EXISTS created_at, DROP COLUMN IF EXISTS updated_at, DROP COLUMN IF EXISTS created_by, DROP COLUMN IF EXISTS updated_by;
+-- access_requests tampoco guarda la fecha ni el autor de la última modificación (updated_at y updated_by).
+ALTER TABLE public.access_requests DROP COLUMN IF EXISTS updated_at, DROP COLUMN IF EXISTS updated_by;
 
 DO $$
 DECLARE
@@ -47,18 +49,3 @@ WHERE c.city_id IS NULL
   AND ar.status = 'APPROVED'
   AND replace(ar.nit, '-', '') = replace(c.nit, '-', '');
 
--- access_requests: fecha y autor de la última modificación (quién aprobó o rechazó).
--- La fecha de las solicitudes existentes se inicializa con su fecha de creación, solo la primera vez.
-ALTER TABLE public.access_requests ADD COLUMN IF NOT EXISTS updated_by VARCHAR(100);
-
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns
-                   WHERE table_schema = 'public' AND table_name = 'access_requests' AND column_name = 'updated_at') THEN
-        ALTER TABLE public.access_requests ADD COLUMN updated_at TIMESTAMP(6);
-        UPDATE public.access_requests SET updated_at = created_at;
-        ALTER TABLE public.access_requests ALTER COLUMN updated_at SET NOT NULL;
-        ALTER TABLE public.access_requests ALTER COLUMN updated_at SET DEFAULT now();
-    END IF;
-END
-$$;
