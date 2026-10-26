@@ -101,7 +101,8 @@ public class DriverServiceImpl implements DriverService {
     private void applyRequest(Driver driver, DriverRequestDTO request) {
         driver.setFullName(request.getFullName());
         driver.setDocument(TextNormalizer.code(request.getDocument()));
-        driver.setEmail(TextNormalizer.email(request.getEmail()));
+        String email = TextNormalizer.email(request.getEmail());
+        driver.setEmail(email == null || email.isEmpty() ? null : email);
         driver.setPhone(request.getPhone());
         driver.setStatus(request.getStatus());
     }

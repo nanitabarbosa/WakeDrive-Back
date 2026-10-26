@@ -34,7 +34,7 @@ public class Driver {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "phone", length = 10)
+    @Column(name = "phone", length = 10, nullable = false)
     private String phone;
 
     @Enumerated(EnumType.STRING)

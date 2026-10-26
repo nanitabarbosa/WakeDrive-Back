@@ -28,6 +28,17 @@ BEGIN
 END
 $$;
 
+-- drivers.phone es obligatorio (la aplicación ya lo exigía). Solo se marca NOT NULL si ningún conductor está sin teléfono.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM public.drivers WHERE phone IS NULL) THEN
+        RAISE NOTICE 'drivers.phone sigue opcional: hay conductores sin teléfono; completarlos y volver a ejecutar este script';
+    ELSE
+        ALTER TABLE public.drivers ALTER COLUMN phone SET NOT NULL;
+    END IF;
+END
+$$;
+
 -- companies: estado (ACTIVE/INACTIVE) y ciudad. Las empresas existentes quedan ACTIVE.
 ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS status VARCHAR(255) NOT NULL DEFAULT 'ACTIVE';
 ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS city_id INTEGER REFERENCES public.cities (city_id);

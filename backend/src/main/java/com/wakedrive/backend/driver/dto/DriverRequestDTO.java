@@ -25,7 +25,6 @@ public class DriverRequestDTO {
     @Pattern(regexp = "^\\d{6,10}$", message = "Debe tener entre 6 y 10 dígitos")
     private String document;
 
-    @NotBlank(message = "Es obligatorio")
     @Email(message = "Ingresa un correo válido")
     @Size(max = 100, message = "Máximo 100 caracteres")
     private String email;
