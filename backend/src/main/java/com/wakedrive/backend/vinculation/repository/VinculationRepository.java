@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 public interface VinculationRepository extends JpaRepository<Vinculation, Integer>, JpaSpecificationExecutor<Vinculation> {
 
     Optional<Vinculation> findByDevice_Serial(String serial);
+
+    Optional<Vinculation> findByDevice_Id(Integer deviceId);
 }

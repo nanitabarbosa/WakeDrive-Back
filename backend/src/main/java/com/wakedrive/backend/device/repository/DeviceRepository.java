@@ -2,6 +2,7 @@ package com.wakedrive.backend.device.repository;
 
 import com.wakedrive.backend.common.entity.RecordStatus;
 import com.wakedrive.backend.device.entity.Device;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -35,4 +36,7 @@ public interface DeviceRepository extends JpaRepository<Device, Integer>, JpaSpe
     }
 
     long countByCompany_IdAndStatus(Integer companyId, RecordStatus status);
+
+    /** Dispositivos que dejaron de reportarse antes de la fecha indicada. */
+    List<Device> findByStatusAndLastConnectionBefore(RecordStatus status, LocalDateTime before);
 }

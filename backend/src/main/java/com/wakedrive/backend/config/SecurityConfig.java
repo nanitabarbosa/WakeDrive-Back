@@ -40,6 +40,8 @@ public class SecurityConfig {
                                 "/api/auth/reset-password", "/api/auth/reset-password/validate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/access-requests").permitAll()
                         .requestMatchers("/api/cities").permitAll()
+                        // El dispositivo no tiene usuario: se identifica con la llave X-Device-Key, que valida el servicio
+                        .requestMatchers(HttpMethod.POST, "/api/device-connection/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/access-requests").hasRole("SUPER_ADMIN")

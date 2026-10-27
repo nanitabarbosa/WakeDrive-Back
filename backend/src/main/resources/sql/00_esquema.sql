@@ -73,3 +73,7 @@ BEGIN
 END
 $$;
 
+-- alerts.level acepta PENDING: alerta de dispositivo apagado o sin señal cuyo nivel se calcula al reconectarse.
+ALTER TABLE public.alerts DROP CONSTRAINT IF EXISTS alerts_level_check;
+ALTER TABLE public.alerts ADD CONSTRAINT alerts_level_check CHECK (level IN ('HIGH', 'MEDIUM', 'LOW', 'PENDING'));
+
