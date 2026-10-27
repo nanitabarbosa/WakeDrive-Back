@@ -45,8 +45,7 @@ public class DriverServiceImpl implements DriverService {
                 String like = "%" + search.toLowerCase() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("fullName")), like),
-                        cb.like(cb.lower(root.get("document")), like),
-                        cb.like(cb.lower(root.get("email")), like)
+                        cb.like(cb.lower(root.get("document")), like)
                 ));
             }
             if (status != null) {

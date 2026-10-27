@@ -27,9 +27,8 @@ public class AlertController {
             @RequestParam(required = false) Integer vehicleId,
             @RequestParam(required = false) Integer eventTypeId,
             @RequestParam(required = false) AlertLevel level,
-            @RequestParam(required = false) String location,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return alertService.getAll(from, to, userId, vehicleId, eventTypeId, level, location, page, size);
+        return alertService.getAll(from, to, userId, vehicleId, eventTypeId, level, page, size);
     }
 }

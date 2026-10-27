@@ -18,7 +18,6 @@ public class AccessRequestDTO {
     private Integer id;
     private String companyName;
     private String nit;
-    private String country;
     private String city;
     private String address;
     private String companyPhone;

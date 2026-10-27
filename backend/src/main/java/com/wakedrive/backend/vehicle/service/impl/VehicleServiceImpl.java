@@ -53,8 +53,7 @@ public class VehicleServiceImpl implements VehicleService {
                 String like = "%" + search.toLowerCase() + "%";
                 predicates.add(cb.or(
                         cb.like(cb.lower(root.get("plate")), like),
-                        cb.like(cb.lower(root.get("brand").get("name")), like),
-                        cb.like(cb.lower(root.get("model")), like)
+                        cb.like(cb.lower(root.get("brand").get("name")), like)
                 ));
             }
             if (vehicleTypeId != null) {

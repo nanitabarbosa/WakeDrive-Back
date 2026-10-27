@@ -8,5 +8,5 @@ import java.time.LocalDate;
 public interface AlertService {
 
     PageResponseDTO<AlertDTO> getAll(LocalDate from, LocalDate to, Integer userId, Integer vehicleId,
-                                      Integer eventTypeId, AlertLevel level, String location, int page, int size);
+                                      Integer eventTypeId, AlertLevel level, int page, int size);
 }

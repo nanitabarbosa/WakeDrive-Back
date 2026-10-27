@@ -35,7 +35,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AccessRequestServiceImpl implements AccessRequestService {
 
-    private static final String COUNTRY = "Colombia";
     private static final String ADMIN_ROLE = "ADMIN";
 
     private final AccessRequestRepository accessRequestRepository;
@@ -194,7 +193,6 @@ public class AccessRequestServiceImpl implements AccessRequestService {
                 .id(accessRequest.getId())
                 .companyName(accessRequest.getCompanyName())
                 .nit(accessRequest.getNit())
-                .country(COUNTRY)
                 .city(accessRequest.getCity().getName())
                 .address(accessRequest.getAddress())
                 .companyPhone(accessRequest.getCompanyPhone())

@@ -21,7 +21,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +32,7 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     public PageResponseDTO<AlertDTO> getAll(LocalDate from, LocalDate to, Integer userId, Integer vehicleId,
-                                             Integer eventTypeId, AlertLevel level, String location, int page, int size) {
+                                             Integer eventTypeId, AlertLevel level, int page, int size) {
         Integer companyId = currentUserProvider.getCurrentCompanyId();
         Specification<Alert> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -55,9 +54,6 @@ public class AlertServiceImpl implements AlertService {
             }
             if (level != null) {
                 predicates.add(cb.equal(root.get("level"), level));
-            }
-            if (StringUtils.hasText(location)) {
-                predicates.add(cb.like(cb.lower(root.get("location")), "%" + location.toLowerCase() + "%"));
             }
             return cb.and(predicates.toArray(new Predicate[0]));
         };
