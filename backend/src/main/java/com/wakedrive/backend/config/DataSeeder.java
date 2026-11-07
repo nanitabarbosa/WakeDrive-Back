@@ -36,10 +36,10 @@ public class DataSeeder implements CommandLineRunner {
     private final BrandRepository brandRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${app.seed.super-admin-email:superadmin@wakedrive.com}")
+    @Value("${app.seed.super-admin-email}")
     private String superAdminEmail;
 
-    @Value("${app.seed.super-admin-password:SuperAdmin123!}")
+    @Value("${app.seed.super-admin-password}")
     private String superAdminPassword;
 
     @Override
