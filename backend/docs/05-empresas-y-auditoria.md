@@ -7,16 +7,15 @@
 - **Activar o desactivar empresas:** `PUT /api/companies/{id}/status` con `{"status": "ACTIVE|INACTIVE"}`, solo SUPER_ADMIN. Devuelve el `CompanySummaryDTO` actualizado.
 - **Empresa inactiva:** sus usuarios no pueden iniciar sesión ni renovar la sesión (403 `COMPANY_INACTIVE`) y sus tokens vigentes dejan de servir. El SUPER_ADMIN no se ve afectado.
 - **Auditoría de empresas y solicitudes:**
-  - `Company` y `AccessRequest` no guardan fechas ni autor de la última modificación: siempre actúa el SUPER_ADMIN y la auditoría de `companies` ya registra cuándo cambia cada empresa.
-  - Tabla `audi_companies` con triggers, con el mismo patrón OLD/NEW de `audi_users`.
+  - `Company` y `AccessRequest` no guardan fechas ni autor de la última modificación: siempre actúa el SUPER_ADMIN.
+  - Solo se audita `users` (tabla `audi_users`). Las tablas `audi_vinculations` y `audi_companies` se retiraron para igualar el esquema desplegado en Supabase; `update.sql` y `01_auditoria.sql` las eliminan si existen.
 - **Resumen de empresas (`getSummary`):** ordenado por nombre y luego id, busca por nombre o NIT (con o sin guion), trae la ciudad con la página y cuenta los dispositivos en una sola consulta. La respuesta añade `nit`, `city` y `status`.
 - **Tope de página:** `PageRequests` limita `size` a 100 en todos los listados paginados.
 - **Limpieza:** se elimina `CompanyRequestDTO` (ningún código lo usaba y el controlador no crea ni edita empresas con él).
 
 ## Decisiones de diseño
 
-- El trigger de auditoría de `companies` guarda en `changed_by` el usuario de la base de datos; como la aplicación se conecta siempre con el mismo usuario, no distingue quién actuó (quien activa o desactiva empresas es siempre el SUPER_ADMIN). La fecha de creación de cada empresa es la de su fila `INSERT` en `audi_companies`.
-- Los `UPDATE` de `companies` solo se auditan si cambia un dato auditado (NIT, nombre, dirección, teléfono, correo, ciudad o estado). Guardar el logo o la alarma no genera filas.
+- El trigger de auditoría de `users` guarda en `changed_by` el usuario de la base de datos; como la aplicación se conecta siempre con el mismo usuario, no distingue quién actuó.
 - La contraseña se valida antes de avisar que la empresa está inactiva, para no revelar a quien no la conoce que ese correo existe.
 - Las columnas nuevas van en `sql/00_esquema.sql` porque `ddl-auto=none`. Debe correr antes de `01_auditoria.sql`.
 
