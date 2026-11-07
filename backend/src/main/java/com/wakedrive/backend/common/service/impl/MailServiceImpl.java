@@ -26,6 +26,16 @@ public class MailServiceImpl implements MailService {
     @Value("${spring.mail.username}")
     private String mailFrom;
 
+    @Value("${app.mail.brevo-api-key:}")
+    private String brevoApiKey;
+
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper =
+            new com.fasterxml.jackson.databind.ObjectMapper();
+
+    private final java.net.http.HttpClient httpClient = java.net.http.HttpClient.newBuilder()
+            .connectTimeout(java.time.Duration.ofSeconds(10))
+            .build();
+
     private static final String ACCOUNT_CREATED_TEMPLATE = """
             <!DOCTYPE html>
             <html lang="es" xmlns="http://www.w3.org/1999/xhtml">
@@ -427,6 +437,10 @@ public class MailServiceImpl implements MailService {
     }
 
     private void sendHtml(String to, String subject, String html) {
+        if (brevoApiKey != null && !brevoApiKey.isBlank()) {
+            sendViaBrevo(to, subject, html);
+            return;
+        }
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
@@ -437,6 +451,38 @@ public class MailServiceImpl implements MailService {
             mailSender.send(message);
         } catch (MessagingException | MailException e) {
             log.warn("Failed to send email to {}: {}", to, e.getMessage());
+        }
+    }
+
+    /**
+     * Envio por la API HTTP de Brevo. Se usa cuando hay BREVO_API_KEY, por ejemplo en hostings
+     * que bloquean SMTP saliente (Render Free). El remitente debe estar verificado en Brevo.
+     */
+    private void sendViaBrevo(String to, String subject, String html) {
+        try {
+            String body = objectMapper.writeValueAsString(java.util.Map.of(
+                    "sender", java.util.Map.of("name", "WakeDrive", "email", mailFrom),
+                    "to", java.util.List.of(java.util.Map.of("email", to)),
+                    "subject", subject,
+                    "htmlContent", html));
+            java.net.http.HttpRequest request = java.net.http.HttpRequest
+                    .newBuilder(java.net.URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .timeout(java.time.Duration.ofSeconds(15))
+                    .header("api-key", brevoApiKey)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+            java.net.http.HttpResponse<String> response = httpClient.send(
+                    request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() / 100 != 2) {
+                log.warn("Brevo rejected email to {}: HTTP {} {}", to, response.statusCode(), response.body());
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Brevo email to {} interrupted", to);
+        } catch (java.io.IOException | RuntimeException e) {
+            log.warn("Failed to send email via Brevo to {}: {}", to, e.getMessage());
         }
     }
 }
